@@ -263,12 +263,12 @@
 
         <div class="betting-panel">
             <div class="bet-box" id="boxT" onclick="selectSide('T')">
-                <div style="font-size: 1.5rem; font-weight: bold;">TÀI</div>
+                <div style="font-size: 1.5rem; font-weight: bold;">Hà Thành</div>
                 <div style="font-size: 0.8rem;">(11 - 17)</div>
                 <div id="betAmtT" style="color: #f1c40f; margin-top: 5px;">0</div>
             </div>
             <div class="bet-box" id="boxX" onclick="selectSide('X')">
-                <div style="font-size: 1.5rem; font-weight: bold;">XỈU</div>
+                <div style="font-size: 1.5rem; font-weight: bold;">Ngọc Xăm</div>
                 <div style="font-size: 0.8rem;">(4 - 10)</div>
                 <div id="betAmtX" style="color: #f1c40f; margin-top: 5px;">0</div>
             </div>
@@ -511,7 +511,7 @@
             disk.style.display = 'none';
             
             const resText = document.getElementById('resultText');
-            resText.textContent = `${total} Điểm - ${result === 'T' ? 'TÀI' : 'XỈU'}`;
+            resText.textContent = `${total} Điểm - ${result === 'T' ? 'HÀ Thành' : 'Ngọc Xăm'}`;
 
             // Tính toán tiền cược và cộng/trừ tiền thưởng
             if (gameState.selectedSide === result) {
@@ -548,7 +548,7 @@
                 <div class="history-row">
                     <span>${h.time}</span>
                     <span>${h.total} điểm</span>
-                    <span style="color:${h.result === 'T' ? '#f1c40f' : '#3498db'}">${h.result === 'T' ? 'TÀI' : 'XỈU'}</span>
+                    <span style="color:${h.result === 'T' ? '#f1c40f' : '#3498db'}">${h.result === 'T' ? 'Hà Thành' : 'Ngọc Xăm'}</span>
                 </div>
             `).join('');
         }
