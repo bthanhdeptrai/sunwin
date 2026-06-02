@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trò chơi của Bảo Thanh</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --accent: #e74c3c;
+            --win: #27ae60;
+            --blue-table: #2980b9;
+            --red-table: #c0392b;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #1a1a1a;
+            color: white;
+            margin: 0;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        /* --- MÀN HÌNH CHÀO --- */
+        #welcomeScreen {
+            text-align: center;
+            transition: all 0.5s;
+        }
+
+        .main-title {
+            font-size: 3rem;
+            color: #f1c40f;
+            text-shadow: 0 0 20px rgba(241, 196, 15, 0.5);
+            margin-bottom: 30px;
+        }
+
+        .btn-play {
+            padding: 15px 50px;
+            font-size: 1.5rem;
+            background: var(--win);
+            color: white;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            transition: transform 0.2s;
+        }
+
+        /* --- CHỌN BÀN --- */
+        #tableSelection {
+            display: none;
+            text-align: center;
+        }
+
+        .table-cards {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .table-card {
+            width: 200px;
+            padding: 40px;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: 0.3s;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .card-blue { background: var(--blue-table); }
+        .card-red { background: var(--red-table); }
+        .table-card:hover { transform: scale(1.05); filter: brightness(1.2); }
+
+        /* --- GIAO DIỆN CHÍNH --- */
+        #gameInterface {
+            display: none;
+            width: 100%;
+            max-width: 1000px;
+            height: 90vh;
+            flex-direction: column;
+            padding: 20px;
+        }
+
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            background: #222;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+
+        /* KHU VỰC ĐĨA & XÚC XẮC */
+        .dice-area {
+            position: relative;
+            height: 250px;
+            background: #064e3b;
+            border: 10px solid #5d4037;
+            border-radius: 50%;
+            width: 250px;
+            margin: 20px auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: inset 0 0 50px rgba(0,0,0,0.5);
+            overflow: visible; /* Cho phép đĩa kéo ra ngoài viền tròn */
+        }
+
+        .dice-container {
+            display: flex;
+            gap: 15px;
+        }
+
+        /* Xúc sắc chấm tròn và animation tung xoáy */
+        .dice {
+            width: 50px;
+            height: 50px;
+            background: white;
+            border-radius: 8px;
+            display: grid;
+            grid-template: repeat(3, 1fr) / repeat(3, 1fr);
+            padding: 5px;
+            box-sizing: border-box;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            transition: transform 0.1s linear;
+        }
+
+        @keyframes diceTungXoay {
+            0% { transform: scale(1) rotate(0deg) translate(0, 0); }
+            20% { transform: scale(1.3) rotate(180deg) translate(-10px, -10px); }
+            40% { transform: scale(1.4) rotate(360deg) translate(15px, -20px); }
+            60% { transform: scale(1.2) rotate(540deg) translate(-5px, 15px); }
+            80% { transform: scale(1.1) rotate(720deg) translate(10px, -5px); }
+            100% { transform: scale(1) rotate(900deg) translate(0, 0); }
+        }
+
+        .dice.rolling {
+            animation: diceTungXoay 1s ease-out forwards;
+        }
+
+        .dot {
+            background: #333;
+            border-radius: 50%;
+            width: 8px;
+            height: 8px;
+            margin: auto;
+            visibility: hidden;
+        }
+
+        /* Đĩa úp */
+        #diskOverlay {
+            position: absolute;
+            top: -10px; left: -10px;
+            width: calc(100% + 20px);
+            height: calc(100% + 20px);
+            background: radial-gradient(circle, #8d6e63, #5d4037);
+            border-radius: 50%;
+            cursor: grab;
+            display: none;
+            z-index: 10;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            color: rgba(255,255,255,0.4);
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+            user-select: none;
+            transform: translate(0px, 0px);
+            transition: none;
+        }
+
+        /* KHU VỰC CƯỢC */
+        .betting-panel {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+        }
+
+        .bet-box {
+            width: 45%;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            background: #333;
+            border: 2px solid transparent;
+            cursor: pointer;
+        }
+
+        .bet-box.active { border-color: #f1c40f; background: #444; }
+
+        /* LỊCH SỬ */
+        #historyTable {
+            flex: 1;
+            margin-top: 20px;
+            background: #222;
+            border-radius: 10px;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .history-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px;
+            border-bottom: 1px solid #333;
+            font-size: 0.9rem;
+        }
+
+        .notif {
+            position: fixed;
+            top: 20px;
+            background: var(--accent);
+            padding: 10px 20px;
+            border-radius: 5px;
+            z-index: 100;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="notif" class="notif"></div>
+
+    <div id="welcomeScreen">
+        <h1 class="main-title">Trò chơi của Bảo Thanh</h1>
+        <button class="btn-play" onclick="showSelection()">CHƠI NGAY</button>
+    </div>
+
+    <div id="tableSelection">
+        <h2 style="color: #f1c40f;">HÃY CHỌN BÀN CHƠI</h2>
+        <div class="table-cards">
+            <div class="table-card card-blue" onclick="joinTable(1)">BÀN XANH</div>
+            <div class="table-card card-red" onclick="joinTable(2)">BÀN ĐỎ</div>
+        </div>
+    </div>
+
+    <div id="gameInterface">
+        <div class="game-header">
+            <div>Tiền của bạn: <span id="balance" style="color: #2ecc71;">100,000</span>đ</div>
+            <div id="tableTag" style="padding: 2px 10px; border-radius: 5px; font-weight: bold;"></div>
+            <button onclick="backToMenu()" style="background:none; border: 1px solid #777; color: white; cursor: pointer;">Đổi bàn</button>
+        </div>
+
+        <div style="text-align: center; font-size: 1.5rem;">Thời gian cược: <span id="timer" style="color: #e74c3c; font-weight: bold;">40</span>s</div>
+
+        <div class="dice-area">
+            <div id="diskOverlay" style="display: none;">KÉO ĐỂ MỞ</div>
+            <div class="dice-container">
+                <div class="dice" id="d1"></div>
+                <div class="dice" id="d2"></div>
+                <div class="dice" id="d3"></div>
+            </div>
+        </div>
+
+        <div id="resultText" style="text-align: center; height: 30px; font-size: 1.2rem; font-weight: bold; color: #f1c40f;"></div>
+
+        <div class="betting-panel">
+            <div class="bet-box" id="boxT" onclick="selectSide('T')">
+                <div style="font-size: 1.5rem; font-weight: bold;">TÀI</div>
+                <div style="font-size: 0.8rem;">(11 - 17)</div>
+                <div id="betAmtT" style="color: #f1c40f; margin-top: 5px;">0</div>
+            </div>
+            <div class="bet-box" id="boxX" onclick="selectSide('X')">
+                <div style="font-size: 1.5rem; font-weight: bold;">XỈU</div>
+                <div style="font-size: 0.8rem;">(4 - 10)</div>
+                <div id="betAmtX" style="color: #f1c40f; margin-top: 5px;">0</div>
+            </div>
+        </div>
+
+        <div style="display: flex; justify-content: center; gap: 10px; margin-top: 15px;">
+            <button onclick="addBet(1000)" style="padding: 10px; cursor: pointer;">+1K</button>
+            <button onclick="addBet(5000)" style="padding: 10px; cursor: pointer;">+5K</button>
+            <button onclick="addBet(10000)" style="padding: 10px; cursor: pointer;">+10K</button>
+            <button onclick="gameState.betAmount = gameState.balance; updateUI();" style="padding: 10px; cursor: pointer; background: #e67e22; border:none; color:white;">TẤT TAY</button>
+        </div>
+
+        <div id="historyTable">
+            <div style="text-align: center; border-bottom: 1px solid #444; padding-bottom: 5px;">LỊCH SỬ BÀN</div>
+            <div id="historyList"></div>
+        </div>
+    </div>
+
+    <script>
+        const gameState = {
+            balance: 100000,
+            currentTable: null,
+            selectedSide: null,
+            betAmount: 0,
+            isOpening: false,
+            revealTimer: null, // Quản lý bộ đếm thời gian tự động mở đĩa
+            tables: {
+                1: { name: "Xanh", color: "#2980b9", history: [], timer: 40, isRolling: false },
+                2: { name: "Đỏ", color: "#c0392b", history: [], timer: 25, isRolling: false }
+            }
+        };
+
+        const diceLayouts = {
+            1: [4],
+            2: [0, 8],
+            3: [0, 4, 8],
+            4: [0, 2, 6, 8],
+            5: [0, 2, 4, 6, 8],
+            6: [0, 2, 3, 5, 6, 8]
+        };
+
+        function showSelection() {
+            document.getElementById('welcomeScreen').style.display = 'none';
+            document.getElementById('tableSelection').style.display = 'block';
+        }
+
+        function joinTable(id) {
+            gameState.currentTable = id;
+            document.getElementById('tableSelection').style.display = 'none';
+            document.getElementById('gameInterface').style.display = 'flex';
+            
+            const tag = document.getElementById('tableTag');
+            tag.textContent = "BÀN " + gameState.tables[id].name.toUpperCase();
+            tag.style.backgroundColor = gameState.tables[id].color;
+            
+            updateUI();
+            renderHistory();
+
+            // Đồng bộ giao diện đĩa úp nếu bàn đang chọn đang ở trạng thái nặn
+            const disk = document.getElementById('diskOverlay');
+            if (gameState.isOpening) {
+                disk.style.display = 'flex';
+            } else {
+                disk.style.display = 'none';
+            }
+        }
+
+        function backToMenu() {
+            document.getElementById('gameInterface').style.display = 'none';
+            document.getElementById('tableSelection').style.display = 'block';
+            gameState.selectedSide = null;
+            gameState.betAmount = 0;
+            updateUI();
+        }
+
+        function selectSide(side) {
+            if (gameState.isOpening || gameState.tables[gameState.currentTable].timer <= 1) return;
+            gameState.selectedSide = side;
+            updateUI();
+        }
+
+        function addBet(amt) {
+            if (!gameState.selectedSide || gameState.isOpening) return;
+            if (gameState.balance >= amt) {
+                gameState.balance -= amt;
+                gameState.betAmount += amt;
+                updateUI();
+            } else {
+                showNotif("Không đủ tiền!");
+            }
+        }
+
+        function updateUI() {
+            document.getElementById('balance').textContent = gameState.balance.toLocaleString();
+            document.getElementById('betAmtT').textContent = (gameState.selectedSide === 'T' ? gameState.betAmount : 0).toLocaleString();
+            document.getElementById('betAmtX').textContent = (gameState.selectedSide === 'X' ? gameState.betAmount : 0).toLocaleString();
+            
+            document.getElementById('boxT').className = 'bet-box' + (gameState.selectedSide === 'T' ? ' active' : '');
+            document.getElementById('boxX').className = 'bet-box' + (gameState.selectedSide === 'X' ? ' active' : '');
+        }
+
+        function drawDice(id, value) {
+            const el = document.getElementById(id);
+            el.innerHTML = '';
+            for (let i = 0; i < 9; i++) {
+                const dot = document.createElement('div');
+                dot.className = 'dot';
+                if (diceLayouts[value].includes(i)) dot.style.visibility = 'visible';
+                el.appendChild(dot);
+            }
+        }
+
+        // Logic thời gian chính
+        setInterval(() => {
+            Object.keys(gameState.tables).forEach(id => {
+                const table = gameState.tables[id];
+                if (table.isRolling) return;
+
+                table.timer--;
+
+                // HIỆU ỨNG TUNG XOÁY XÚC XẮC KHI CÒN ĐÚNG 1 GIÂY
+                if (table.timer === 1 && id == gameState.currentTable) {
+                    document.getElementById('d1').classList.add('rolling');
+                    document.getElementById('d2').classList.add('rolling');
+                    document.getElementById('d3').classList.add('rolling');
+                }
+                
+                if (id == gameState.currentTable) {
+                    document.getElementById('timer').textContent = Math.max(0, table.timer);
+                }
+
+                if (table.timer <= 0) {
+                    startReveal(id);
+                }
+            });
+        }, 1000);
+
+        function startReveal(tableId) {
+            const table = gameState.tables[tableId];
+            table.isRolling = true;
+            
+            const v1 = Math.floor(Math.random() * 6) + 1;
+            const v2 = Math.floor(Math.random() * 6) + 1;
+            const v3 = Math.floor(Math.random() * 6) + 1;
+            const total = v1 + v2 + v3;
+            const result = total >= 11 ? 'T' : 'X';
+
+            if (tableId == gameState.currentTable) {
+                gameState.isOpening = true;
+                
+                // Tắt animation để xúc xắc dừng lại hiện điểm thật
+                setTimeout(() => {
+                    document.getElementById('d1').classList.remove('rolling');
+                    document.getElementById('d2').classList.remove('rolling');
+                    document.getElementById('d3').classList.remove('rolling');
+                    drawDice('d1', v1); drawDice('d2', v2); drawDice('d3', v3);
+                }, 100);
+
+                const disk = document.getElementById('diskOverlay');
+                disk.style.display = 'flex';
+                disk.style.transform = 'translate(0px, 0px)';
+                document.getElementById('resultText').textContent = "HÃY MỞ ĐĨA! (TỰ ĐỘNG MỞ SAU 5S)";
+                
+                enableDiskDragging(total, result);
+
+                // TỰ ĐỘNG HIỆN KẾT QUẢ SAU 5 GIÂY NẾU KHÔNG KÉO ĐĨA
+                gameState.revealTimer = setTimeout(() => {
+                    finalizeResult(total, result);
+                }, 5000);
+
+            } else {
+                // Chạy ngầm cho bàn kia không ảnh hưởng người chơi
+                table.history.unshift({ total, result, time: new Date().toLocaleTimeString() });
+                table.timer = 40; 
+                table.isRolling = false;
+            }
+        }
+
+        // CHỨC NĂNG KÉO ĐĨA 360 ĐỘ TỰ DO
+        function enableDiskDragging(total, result) {
+            const disk = document.getElementById('diskOverlay');
+            let isDragging = false;
+            let startX = 0, startY = 0;
+
+            const onStart = (e) => {
+                isDragging = true;
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                startX = clientX;
+                startY = clientY;
+                disk.style.cursor = 'grabbing';
+            };
+
+            const onMove = (e) => {
+                if (!isDragging) return;
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                
+                // Tính độ lệch khoảng cách theo cả trục X và Y
+                const diffX = clientX - startX;
+                const diffY = clientY - startY;
+                
+                disk.style.transform = `translate(${diffX}px, ${diffY}px)`;
+                
+                // Tính khoảng cách kéo theo đường chéo (bán kính bất kì từ tâm)
+                const distance = Math.sqrt(diffX * diffX + diffY * diffY);
+                
+                // Nếu kéo ra xa quá 120px theo bất kì hướng nào thì tính là mở đĩa thành công
+                if (distance > 120) {
+                    isDragging = false;
+                    clearTimeout(gameState.revealTimer); // Hủy đếm ngược tự động mở
+                    finalizeResult(total, result);
+                }
+            };
+
+            const onEnd = () => {
+                if (!isDragging) return;
+                isDragging = false;
+                disk.style.cursor = 'grab';
+                // Thêm hiệu ứng hồi vị mượt mà nếu thả tay giữa chừng
+                disk.style.transition = 'transform 0.2s ease-out';
+                disk.style.transform = 'translate(0px, 0px)';
+                setTimeout(() => { disk.style.transition = 'none'; }, 200);
+            };
+
+            disk.onmousedown = onStart;
+            window.onmousemove = onMove;
+            window.onmouseup = onEnd;
+            disk.ontouchstart = onStart;
+            window.ontouchmove = onMove;
+            window.ontouchend = onEnd;
+        }
+
+        function finalizeResult(total, result) {
+            // Hủy toàn bộ sự kiện vuốt kéo tránh lỗi lặp kết quả
+            window.onmousemove = null; window.onmouseup = null;
+            window.ontouchmove = null; window.ontouchend = null;
+
+            const disk = document.getElementById('diskOverlay');
+            disk.style.display = 'none';
+            
+            const resText = document.getElementById('resultText');
+            resText.textContent = `${total} Điểm - ${result === 'T' ? 'TÀI' : 'XỈU'}`;
+
+            // Tính toán tiền cược và cộng/trừ tiền thưởng
+            if (gameState.selectedSide === result) {
+                const win = gameState.betAmount * 2;
+                gameState.balance += win;
+                showNotif(`Chúc mừng! Bạn thắng ${win.toLocaleString()}đ`);
+            } else if (gameState.betAmount > 0) {
+                showNotif(`Rất tiếc! Bạn đã thua ván này`);
+            }
+
+            // Cập nhật lịch sử bàn cược
+            gameState.tables[gameState.currentTable].history.unshift({ 
+                total, result, time: new Date().toLocaleTimeString() 
+            });
+
+            gameState.betAmount = 0;
+            gameState.selectedSide = null;
+            updateUI();
+            renderHistory();
+
+            // Đợi đúng 5s sau khi mở đĩa rồi tự động reset ván chơi mới
+            setTimeout(() => {
+                gameState.isOpening = false;
+                gameState.tables[gameState.currentTable].timer = 40;
+                gameState.tables[gameState.currentTable].isRolling = false;
+                resText.textContent = "";
+            }, 5000);
+        }
+
+        function renderHistory() {
+            const list = document.getElementById('historyList');
+            const history = gameState.tables[gameState.currentTable].history;
+            list.innerHTML = history.slice(0, 10).map(h => `
+                <div class="history-row">
+                    <span>${h.time}</span>
+                    <span>${h.total} điểm</span>
+                    <span style="color:${h.result === 'T' ? '#f1c40f' : '#3498db'}">${h.result === 'T' ? 'TÀI' : 'XỈU'}</span>
+                </div>
+            `).join('');
+        }
+
+        function showNotif(msg) {
+            const n = document.getElementById('notif');
+            n.textContent = msg;
+            n.style.display = 'block';
+            setTimeout(() => n.style.display = 'none', 3000);
+        }
+    </script>
+</body>
+</html>
