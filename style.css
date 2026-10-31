@@ -203,3 +203,185 @@ button{font-family:inherit}
 .disk{will-change:transform}
 @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
 @media (max-width:640px){.hero{flex-direction:column;text-align:center}.hero .act{margin:0 auto}.table-row{flex-wrap:wrap}.tr-go{width:100%;text-align:center}}
+
+
+/* ===== Sảnh bắt mắt: hũ thưởng + xúc xắc nhảy múa ===== */
+.fdice{position:absolute;bottom:-60px;z-index:0;opacity:0;pointer-events:none;animation:drift linear infinite}
+@keyframes drift{0%{transform:translateY(0) rotate(0);opacity:0}10%,90%{opacity:.2}100%{transform:translateY(-115vh) rotate(540deg);opacity:0}}
+
+/* Dải 3 hũ */
+.jp-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+.jp-card{position:relative;padding:10px 8px 12px;border-radius:16px;text-align:center;border:2px solid var(--gold-3);background:linear-gradient(#3a2412,#150c05);overflow:hidden}
+.jp-card::after{content:"";position:absolute;inset:0;border-radius:14px;box-shadow:inset 0 0 22px var(--jc);opacity:.3;pointer-events:none;animation:jpGlow 2.2s ease-in-out infinite alternate}
+.jp-bronze{--jc:#d98b4a}.jp-silver{--jc:#cfd8e0}.jp-gold{--jc:#ffd24a;border-color:var(--gold-1)}
+.jp-silver::after{animation-delay:.5s}.jp-gold::after{animation-delay:1s}
+@keyframes jpGlow{to{opacity:1}}
+.jp-ico{font-size:1.5rem;animation:coinBob 1.6s ease-in-out infinite}
+.jp-silver .jp-ico{animation-delay:.25s}.jp-gold .jp-ico{animation-delay:.5s}
+@keyframes coinBob{50%{transform:translateY(-4px) scale(1.15)}}
+.jp-name{font-size:.72rem;color:var(--gold-1);opacity:.85;margin-top:2px}
+.jp-card b{display:block;margin-top:2px;font-size:1.05rem;color:var(--jc);font-variant-numeric:tabular-nums;text-shadow:0 0 10px var(--jc)}
+.jp-gold b{font-size:1.2rem}
+
+/* Banner chính */
+.hero{position:relative;overflow:hidden;background:radial-gradient(ellipse at 18% 50%,rgba(255,190,80,.28),transparent 55%),linear-gradient(120deg,#6a1f1a,#2b0f0c 60%,#3a2412)}
+.hero::after{content:"";position:absolute;top:0;bottom:0;left:0;width:35%;background:linear-gradient(100deg,transparent,rgba(255,240,190,.3),transparent);transform:translateX(-130%) skewX(-18deg);animation:sweep 5s ease-in-out infinite;pointer-events:none}
+@keyframes sweep{0%,55%{transform:translateX(-130%) skewX(-18deg)}100%{transform:translateX(420%) skewX(-18deg)}}
+.hero-art{display:flex;gap:22px;align-items:flex-end;perspective:700px;padding:30px 10px 14px;flex:0 0 auto}
+.hero-art span{animation:none}
+
+/* Xúc xắc 3D: nhảy + xoay */
+.slot{position:relative;width:58px;height:58px;animation-delay:var(--d)}
+.shadow{position:absolute;left:50%;bottom:-12px;width:54px;height:12px;margin-left:-27px;border-radius:50%;background:rgba(0,0,0,.55);filter:blur(2px);animation:shadowPulse 1.8s ease-in-out infinite;animation-delay:var(--d)}
+@keyframes shadowPulse{0%,100%{transform:scale(1);opacity:.55}50%{transform:scale(.5);opacity:.2}}
+.die{position:absolute;inset:0;animation:hop 1.8s ease-in-out infinite;animation-delay:var(--d)}
+@keyframes hop{0%{transform:translateY(0) scale(1.12,.84)}12%{transform:translateY(0) scale(1,1)}50%{transform:translateY(-42px)}88%{transform:translateY(0)}100%{transform:translateY(0) scale(1.12,.84)}}
+.cube{position:absolute;inset:0;transform-style:preserve-3d}
+.cubeA{animation:tumbleA 4.2s linear infinite}
+.cubeB{animation:tumbleB 5s linear infinite}
+.cubeC{animation:tumbleC 3.6s linear infinite}
+@keyframes tumbleA{from{transform:rotateX(-20deg) rotateY(0)}to{transform:rotateX(340deg) rotateY(360deg)}}
+@keyframes tumbleB{from{transform:rotateX(15deg) rotateY(360deg) rotateZ(0)}to{transform:rotateX(375deg) rotateY(0) rotateZ(360deg)}}
+@keyframes tumbleC{from{transform:rotateY(0) rotateZ(-10deg)}to{transform:rotateY(360deg) rotateZ(350deg)}}
+.f{position:absolute;inset:0;border-radius:10px;border:1px solid rgba(0,0,0,.2);background:linear-gradient(145deg,#fff,#e6dcc2);box-shadow:inset 0 0 8px rgba(0,0,0,.15);display:grid;grid-template:repeat(3,1fr)/repeat(3,1fr);padding:7px}
+.f i{width:9px;height:9px;margin:auto;border-radius:50%;background:radial-gradient(circle at 35% 30%,#555,#1e120a)}
+.f i.off{visibility:hidden}
+.f.one i{width:15px;height:15px;background:radial-gradient(circle at 35% 30%,#ff6b5a,#c4241a)}
+.f1{transform:translateZ(29px)}.f2{transform:rotateY(90deg) translateZ(29px)}.f3{transform:rotateY(180deg) translateZ(29px)}
+.f4{transform:rotateY(-90deg) translateZ(29px)}.f5{transform:rotateX(90deg) translateZ(29px)}.f6{transform:rotateX(-90deg) translateZ(29px)}
+.hero:hover .die,.hero:hover .shadow{animation-duration:.9s}
+.hero:hover .cube{animation-duration:2s}
+
+/* Hũ thưởng lớn ở banner */
+.jackpot{display:flex;flex-direction:column;gap:2px;margin-bottom:10px}
+.jackpot span{font-size:.8rem;color:#ffd9a0}
+.jackpot b{font-size:2rem;line-height:1.1;font-variant-numeric:tabular-nums;background:linear-gradient(100deg,#ffe27a 20%,#fff7d1 40%,#ffb92e 60%,#ffe27a 80%);background-size:250% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 8px rgba(255,190,50,.55));animation:goldShine 3s linear infinite}
+@keyframes goldShine{to{background-position:-250% 0}}
+.tick{animation:tickPop .35s ease-out}
+.jackpot b.tick{animation:goldShine 3s linear infinite,tickPop .35s ease-out}
+@keyframes tickPop{50%{transform:scale(1.07)}}
+
+/* Người thắng mới nhảy vào */
+.feed-row.fresh{animation:feedIn .6s ease-out}
+@keyframes feedIn{0%{transform:translateX(-24px);opacity:0;background:rgba(255,210,74,.35)}100%{transform:none;opacity:1;background:transparent}}
+.feed-row.big b{color:#ffd24a;text-shadow:0 0 8px rgba(255,210,74,.7)}
+
+@media (max-width:640px){
+  .jp-card b{font-size:.85rem}.jp-gold b{font-size:.95rem}.jp-name{font-size:.62rem}
+  .hero-art{padding-top:48px}.jackpot b{font-size:1.6rem}.jackpot{align-items:center}
+}
+
+
+/* ===== Bàn kiểu sòng: khung đồng-vàng, sảnh mờ phía sau ===== */
+#stage{background:rgba(6,3,2,.62)}
+#topbar{top:76px;left:50%;right:auto;transform:translateX(-50%);width:max-content;max-width:calc(100vw - 16px);height:auto;padding:6px 12px;border:2px solid var(--gold-3);border-radius:22px;background:rgba(21,12,5,.88);flex-wrap:wrap;justify-content:center}
+@media (min-width:1280px){#topbar{top:50%;left:10px;transform:translateY(-50%);flex-direction:column;align-items:stretch;border-radius:18px;max-width:200px}#dock{flex-direction:column}}
+#emptyHint{top:50%}
+
+.tbl-window{width:min(500px,calc(100vw - 16px));padding:6px;border-radius:46px;box-shadow:0 0 0 2px rgba(0,0,0,.6),0 18px 44px rgba(0,0,0,.75),0 0 34px color-mix(in srgb,var(--glow) 35%,transparent)}
+.win-inner{position:relative;border-radius:40px;max-height:calc(100vh - 90px);background:radial-gradient(ellipse at 50% 0%,rgba(255,220,150,.22),transparent 55%),linear-gradient(var(--panel-a),var(--panel-b));box-shadow:inset 0 0 0 3px rgba(246,224,160,.28),inset 0 0 46px rgba(0,0,0,.65)}
+.deco{position:absolute;top:-20px;left:50%;transform:translateX(-50%);width:230px;display:flex;justify-content:space-between;font-size:1.7rem;pointer-events:none;z-index:6}
+.d-dice,.d-coin{display:inline-block;animation:decoHop 1.7s ease-in-out infinite;filter:drop-shadow(0 3px 3px rgba(0,0,0,.6))}
+.d-coin{animation-delay:.5s}
+@keyframes decoHop{50%{transform:translateY(-7px) rotate(14deg)}}
+
+.win-bar{height:auto;align-items:flex-start;padding:12px 16px 0}
+.ibar{flex:1;display:flex;align-items:center;gap:6px;padding-top:6px}
+.ibar.right{justify-content:flex-end}
+.win-bar .ico-btn{width:34px;height:34px;font-size:.95rem}
+.session-plate{position:relative;left:auto;top:-12px;transform:none;flex:0 0 auto;min-width:150px;padding:8px 22px 9px;border-radius:0 0 22px 22px;font-size:1.05rem;letter-spacing:.5px;background:linear-gradient(#4a3017,#1a0f06);box-shadow:0 4px 10px rgba(0,0,0,.5),inset 0 -2px 6px rgba(246,224,160,.15)}
+.win-body{padding:2px 14px 14px}
+.status-plate{margin:2px auto 14px;width:fit-content;min-width:220px;max-width:100%;min-height:32px;padding:6px 22px;border-radius:20px;text-align:center;font-weight:bold;font-size:.9rem;color:var(--gold-1);border:2px solid var(--gold-2);background:linear-gradient(#2b1a0c,#0f0804);box-shadow:inset 0 0 12px rgba(0,0,0,.8)}
+.status-plate::before{content:"📣 "}
+.status-plate.hot{color:#fff;border-color:var(--gold-1);box-shadow:inset 0 0 12px rgba(0,0,0,.8),0 0 14px var(--glow)}
+
+.board-main{gap:0;align-items:stretch}
+.side-panel{position:relative;padding:20px 8px 12px;border-radius:24px;background:linear-gradient(rgba(0,0,0,.12),rgba(0,0,0,.6)),linear-gradient(var(--panel-a),var(--panel-b));border-color:var(--gold-2)}
+.side-T{padding-right:36px;border-radius:28px 12px 12px 28px}
+.side-X{padding-left:36px;border-radius:12px 28px 28px 12px}
+.players{position:absolute;top:-13px;left:50%;transform:translateX(-50%);padding:2px 14px;font-weight:bold;font-size:.8rem;background:linear-gradient(#2b1a0c,#0f0804);border:2px solid var(--gold-2)}
+.side-T .players{left:calc(50% - 14px)}.side-X .players{left:calc(50% + 14px)}
+.side-name{font-size:1.25rem;margin-top:4px;text-shadow:0 2px 6px rgba(0,0,0,.7)}
+.pool{padding:5px 2px;border-radius:14px;border:2px solid var(--gold-2);background:linear-gradient(#6a1418,#2a0507);font-size:.9rem;box-shadow:inset 0 0 8px rgba(0,0,0,.6)}
+.pill{padding:6px 4px;border-radius:12px;border:2px solid var(--gold-3);background:linear-gradient(#f6e0a0,#c9a14a);color:#4a2c08;font-size:.78rem}
+
+.dice-area{position:relative;z-index:3;width:170px;height:170px;margin:0 -30px;border:0;background:radial-gradient(circle at 50% 40%,#2c1b0d,#080402);box-shadow:0 0 0 3px #2b1a0c,0 8px 22px rgba(0,0,0,.75),inset 0 0 42px rgba(0,0,0,.95)}
+.dice-area::before{content:"";position:absolute;inset:-9px;border-radius:50%;pointer-events:none;background:conic-gradient(#f6e0a0,#7a5320,#f6e0a0,#c9a14a,#7a5320,#f6e0a0);-webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 9px),#000 calc(100% - 8px));mask:radial-gradient(farthest-side,transparent calc(100% - 9px),#000 calc(100% - 8px))}
+.timer{font-size:4.2rem;font-weight:500}
+.dice{width:36px;height:36px;border-radius:7px}
+.disk{top:-5px;left:-5px;width:calc(100% + 10px);height:calc(100% + 10px)}
+
+.road-row{display:flex;align-items:center;gap:8px;margin-top:16px}
+.road-row .rb{flex:0 0 auto;width:36px;height:36px}
+.road-row .dot-road{flex:1;margin:0;width:auto;justify-content:center;gap:6px;padding:8px 10px;border-radius:24px;border:2px solid var(--gold-3);background:linear-gradient(#1a0f06,#0a0603);box-shadow:inset 0 0 14px #000}
+.rd{width:15px;height:15px}
+
+.act-confirm,.act-allin,.act-cancel{border-color:var(--gold-1)}
+
+@media (max-width:520px){
+  .tbl-window{border-radius:34px}.win-inner{border-radius:29px}
+  .dice-area{width:128px;height:128px;margin:0 -24px}.timer{font-size:3rem}.dice{width:28px;height:28px}
+  .side-T{padding-right:28px}.side-X{padding-left:28px}.side-name{font-size:1rem}.pool{font-size:.78rem}
+  .session-plate{min-width:110px;padding:6px 12px 7px;font-size:.9rem}.win-label{display:none}.deco{width:170px}
+  .rd{width:11px;height:11px}.road-row .dot-road{gap:3px;padding:7px 6px}
+}
+
+
+/* ===== Responsive: không còn thanh cuộn ngang, mọi thứ co theo bề rộng bàn ===== */
+html,body{max-width:100%;overflow:hidden}
+.lb-main{overflow-x:hidden}
+.tbl-window{container-type:inline-size}
+.win-body{overflow-x:hidden;min-width:0}
+.win-bar,.board-main,.road-row,.action-row,.chip-row{min-width:0}
+
+/* thanh trên cùng của bàn */
+.ibar{min-width:0;flex:1 1 0}
+.win-label{white-space:nowrap}
+.win-bar .ico-btn{flex:0 0 auto;width:clamp(28px,7cqw,34px);height:clamp(28px,7cqw,34px)}
+.session-plate{min-width:clamp(96px,30cqw,150px);padding-left:clamp(10px,4cqw,22px);padding-right:clamp(10px,4cqw,22px);font-size:clamp(.82rem,3.6cqw,1.05rem)}
+@container (max-width:430px){.win-label{display:none}}
+
+/* hai ô cược + vòng tròn giữa: tính theo % bề rộng bàn */
+.side-panel{flex:1 1 0;min-width:0;overflow:visible}
+.side-T{padding-right:7cqw}.side-X{padding-left:7cqw}
+.side-name{font-size:clamp(.95rem,4.8cqw,1.25rem)}
+.pool,.mybet{font-size:clamp(.7rem,3.4cqw,.9rem)}
+.pill{font-size:clamp(.66rem,3cqw,.78rem)}
+.dice-area{flex:0 0 auto;width:34cqw;height:34cqw;margin:0 -6cqw}
+.timer{font-size:clamp(2.2rem,14cqw,4.2rem)}
+.dice{width:clamp(24px,7cqw,36px);height:clamp(24px,7cqw,36px)}
+.dice-box{gap:clamp(3px,1cqw,6px)}
+
+/* hàng chấm lịch sử: 20 chấm tự co để luôn vừa khung */
+.road-row{gap:clamp(4px,1.6cqw,8px)}
+.road-row .rb{width:clamp(28px,7cqw,36px);height:clamp(28px,7cqw,36px)}
+.road-row .dot-road{min-width:0;gap:clamp(2px,.8cqw,6px);padding:8px clamp(6px,2cqw,10px)}
+.rd{flex:1 1 0;min-width:0;max-width:15px;width:auto;height:auto;aspect-ratio:1}
+
+/* chip + nút hành động */
+.chip-row .chip{font-size:clamp(.58rem,2.6cqw,.74rem);overflow:hidden}
+.action-row{gap:clamp(4px,1.6cqw,8px)}
+.act{padding:10px 4px;font-size:clamp(.72rem,3.2cqw,.9rem);min-width:0}
+
+/* sảnh trên điện thoại */
+@media (max-width:640px){
+  .lb-top{gap:6px;padding:6px 8px}
+  .avatar{width:42px;height:42px;font-size:1.2rem}
+  .lb-name{max-width:84px;padding:4px 8px;font-size:.78rem}
+  .lb-money{min-width:0;flex:1;padding:3px 4px 3px 10px}
+  #lbBalance{font-size:1rem;min-width:0;overflow:hidden;text-overflow:ellipsis}
+  .lb-money button{width:28px;height:28px;font-size:1.1rem}
+  .lb-btn{padding:2px 6px;font-size:1rem}
+  .lb-main{padding:10px}
+  .jp-card{padding:8px 4px 10px;min-width:0}
+  .jp-card b,.jp-gold b{font-size:.74rem;overflow-wrap:anywhere}
+  .hero{padding:16px 14px;gap:8px}
+  .hero-art{gap:16px}
+  .hero-info h2{font-size:1.4rem}
+  .lb-bottom button{font-size:.7rem;padding:4px 2px}
+  .lb-bottom .rut{font-size:1.05rem;letter-spacing:1px;padding:10px 4px;margin:-8px 4px 2px}
+  .tr-badge{width:48px;height:48px;font-size:1.5rem}
+  .auth-card{padding:18px 16px 22px}
+}
+@media (max-width:1499px){#topbar{top:76px;left:50%;transform:translateX(-50%);flex-direction:row;align-items:center;max-width:calc(100vw - 16px)}#dock{flex-direction:row}}
+@media (min-width:1500px){#topbar{top:50%;left:10px;transform:translateY(-50%);flex-direction:column;align-items:stretch;border-radius:18px;max-width:200px}#dock{flex-direction:column}}

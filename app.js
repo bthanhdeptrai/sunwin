@@ -44,16 +44,24 @@ function windowHTML(t) {
       <button class="pill" type="button">ĐẶT CƯỢC</button>
       <div class="mybet" data-r="bet${s}">0</div>
     </div>`;
+  const svgChart = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,18 8,8 14,15 22,4"/></svg>';
   return `<div class="win-inner">
+    <div class="deco"><span class="d-dice">🎲</span><span class="d-coin">🪙</span></div>
     <div class="win-bar" data-r="bar">
-      <div class="win-left">
-        <button class="ico-btn" title="Lịch sử phiên" onclick="openHistory(${id})"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,18 8,8 14,15 22,4"/></svg></button>
+      <div class="ibar left">
+        <button class="ico-btn" title="Lịch sử phiên" onclick="openHistory(${id})">${svgChart}</button>
+        <button class="ico-btn" title="Luật chơi" onclick="showRules()">?</button>
         <span class="win-label" style="background:${t.color}">BÀN ${t.name.toUpperCase()}</span>
       </div>
       <div class="session-plate" data-r="sessionNo">#0</div>
-      <button class="ico-btn" title="Đóng bàn" onclick="closeTable(${id})">✕</button>
+      <div class="ibar right">
+        <button class="ico-btn" title="Vinh danh" onclick="soon()">🏆</button>
+        <button class="ico-btn" title="Chat" onclick="soon()">💬</button>
+        <button class="ico-btn" title="Đóng bàn" onclick="closeTable(${id})">✕</button>
+      </div>
     </div>
     <div class="win-body">
+      <div class="status-plate" data-r="result"></div>
       <div class="board-main">
         ${side('T', 'Hà Thành', '(11 - 17)')}
         <div class="dice-area">
@@ -63,8 +71,11 @@ function windowHTML(t) {
         </div>
         ${side('X', 'Ngọc Xăm', '(4 - 10)')}
       </div>
-      <div class="dot-road" data-r="dotRoad"></div>
-      <div class="result-text" data-r="result"></div>
+      <div class="road-row">
+        <button class="ico-btn rb" title="Chi tiết phiên" onclick="openHistory(${id})">📋</button>
+        <div class="dot-road" data-r="dotRoad"></div>
+        <button class="ico-btn rb" title="Cược nhanh" onclick="soon()">✋</button>
+      </div>
       <div class="chip-wrap" data-r="chipRow"><div class="chip-inner"><div class="chip-row">${CHIPS.map(c => `<button class="chip" onclick="addChip(${id},${c[1]})">${c[0]}</button>`).join('')}</div></div></div>
       <div class="action-row" data-r="controls">
         <button class="act act-allin" onclick="allIn(${id})">ALL-IN</button>
@@ -95,7 +106,8 @@ function buildWindow(t) {
     if (!drag) return;
     const w = win.offsetWidth;
     t.x = Math.min(Math.max(e.clientX - drag.dx, 90 - w), innerWidth - 90);
-    t.y = Math.min(Math.max(e.clientY - drag.dy, 56), innerHeight - 50);
+    t.y = Math.min(Math.max(e.clientY - drag.dy, 8), innerHeight - 50);
+    t.y = Math.max(t.y, 8);
     if (!t.raf) t.raf = requestAnimationFrame(() => { t.raf = 0; moveWin(t); });
   });
   ['pointerup', 'pointercancel'].forEach(ev => bar.addEventListener(ev, () => drag = null));
@@ -135,16 +147,23 @@ function placeWindow(t) {
   const x1 = Math.max(8, (innerWidth - 2 * w - gap) / 2);
   let x = t.id === 1 ? x1 : x1 + w + gap;
   if (x + w > innerWidth - 8) x = Math.max(8, Math.min(x1 + 40 * (t.id - 1), innerWidth - w - 8));
-  t.x = x; t.y = 64 + (t.id - 1) * 12; t.placed = true;
+  t.x = x; t.y = 70 + (t.id - 1) * 12; t.placed = true;
+  moveWin(t); clampWin(t);
+}
+function clampWin(t) { // giữ cửa sổ luôn nằm trong màn hình (laptop, PC, điện thoại, xoay ngang)
+  if (!t.open) return;
+  const w = t.win.offsetWidth, h = t.win.offsetHeight;
+  t.x = Math.min(Math.max(t.x, 8), Math.max(8, innerWidth - w - 8));
+  t.y = Math.min(Math.max(t.y, 8), Math.max(8, innerHeight - h - 8));
   moveWin(t);
 }
+addEventListener('resize', () => Object.values(gameState.tables).forEach(clampWin));
 function moveWin(t) { t.win.style.transform = `translate3d(${t.x}px, ${t.y}px, 0)`; }
 
 
 function openTable(id) {
   const t = gameState.tables[id];
-  $('lobby').style.display = 'none';
-  $('stage').style.display = 'block';
+  $('stage').style.display = 'block'; // sảnh vẫn chạy mờ phía sau
   if (!t.open) {
     t.open = true; t.win.style.display = 'block';
     t.win.classList.remove('pop'); void t.win.offsetWidth; t.win.classList.add('pop');
@@ -307,9 +326,15 @@ function renderTable(t) {
   if (t.phase === 'reveal') r.disk.style.display = 'flex';
   else { r.disk.style.display = 'none'; r.disk.style.transform = 'translate(0,0)'; }
 
-  if (t.phase === 'reveal') setTxt(r.result, `HÃY MỞ ĐĨA! (TỰ ĐỘNG MỞ SAU ${t.phaseLeft}S)`);
-  else if (t.phase === 'result') setTxt(r.result, `${t.history[0].total} Điểm - ${SIDE_NAME[t.history[0].result]}`);
-  else setTxt(r.result, '');
+  let msg;
+  if (t.phase === 'reveal') msg = `Hãy mở đĩa! (tự mở sau ${t.phaseLeft}s)`;
+  else if (t.phase === 'result') msg = `${t.history[0].total} điểm - ${SIDE_NAME[t.history[0].result]}`;
+  else if (t.timer <= 1) msg = 'Hết giờ đặt cược';
+  else if (t.timer <= 5) msg = 'Sắp hết giờ đặt cược!';
+  else if (t.timer >= BET_TIME - 3) msg = 'Bắt đầu phiên mới.';
+  else msg = 'Mời đặt cược';
+  setTxt(r.result, msg);
+  r.result.classList.toggle('hot', t.phase !== 'betting' || t.timer <= 5);
 
   if (t.dotKey !== t.history[0].session) {
     t.dotKey = t.history[0].session;
@@ -513,11 +538,51 @@ function showGames() { $('viewTables').style.display = 'none'; $('viewGames').st
 const FEED_NAMES = ['kha', 'minh', 'tuan', 'hoa', 'long', 'nam', 'vy', 'dat'];
 const fakeWin = () => ({ n: FEED_NAMES[randInt(0, 7)] + '***' + randInt(10, 99), amt: randInt(2, 500) * 10000 });
 let feed = Array.from({ length: 5 }, fakeWin);
-function renderFeed() {
-  $('feedList').innerHTML = feed.map(f => `<div class="feed-row"><span>🏆 ${f.n}</span><b>+${f.amt.toLocaleString()}</b></div>`).join('');
-  $('jackpot').textContent = jackpot.toLocaleString();
+let pots = { mini: randInt(2e7, 9e7), minor: randInt(2e8, 9e8), major: randInt(1e9, 3e9) }, lastFeedTop = null;
+function tweenNum(el, to, ms = 1200) { // số chạy cuộn mượt tới giá trị mới
+  if (!el || el.dataset.v === String(to)) return;
+  const from = +el.dataset.v || 0; el.dataset.v = to;
+  const t0 = performance.now(); cancelAnimationFrame(el._r);
+  const step = t => {
+    const p = Math.min(1, (t - t0) / ms), e = 1 - Math.pow(1 - p, 3);
+    el.textContent = Math.round(from + (to - from) * e).toLocaleString();
+    if (p < 1) el._r = requestAnimationFrame(step);
+  };
+  el._r = requestAnimationFrame(step);
+  el.classList.remove('tick'); void el.offsetWidth; el.classList.add('tick');
 }
-setInterval(() => { jackpot += randInt(1e3, 5e4); if (Math.random() < .4) { feed.unshift(fakeWin()); feed.length = 5; } renderFeed(); }, 2500);
+function renderFeed() {
+  const fresh = feed[0] !== lastFeedTop && lastFeedTop !== null; lastFeedTop = feed[0];
+  $('feedList').innerHTML = feed.map((f, i) => `<div class="feed-row${fresh && i === 0 ? ' fresh' : ''}${f.amt >= 3e6 ? ' big' : ''}"><span>🏆 ${f.n}</span><b>+${f.amt.toLocaleString()}</b></div>`).join('');
+  tweenNum($('jackpot'), jackpot, 1800);
+  tweenNum($('jpMini'), pots.mini); tweenNum($('jpMinor'), pots.minor); tweenNum($('jpMajor'), pots.major);
+}
+setInterval(() => {
+  jackpot += randInt(1e3, 5e4); pots.mini += randInt(200, 3e3); pots.minor += randInt(2e3, 2e4); pots.major += randInt(1e4, 9e4);
+  if (Math.random() < .4) { feed.unshift(fakeWin()); feed.length = 5; }
+  renderFeed();
+}, 2500);
+
+// Xúc xắc 3D nhảy múa ở banner
+const PIPS = { 1: [5], 2: [1, 9], 3: [1, 5, 9], 4: [1, 3, 7, 9], 5: [1, 3, 5, 7, 9], 6: [1, 3, 4, 6, 7, 9] };
+const faceHTML = (cls, v) => `<div class="f ${cls}${v === 1 ? ' one' : ''}">` +
+  Array.from({ length: 9 }, (_, i) => `<i${PIPS[v].includes(i + 1) ? '' : ' class="off"'}></i>`).join('') + '</div>';
+(function heroDice() {
+  const faces = [['f1', 1], ['f2', 3], ['f3', 6], ['f4', 4], ['f5', 2], ['f6', 5]];
+  $('heroArt').innerHTML = ['A', 'B', 'C'].map((k, i) =>
+    `<div class="slot" style="--d:${i * .35}s"><div class="shadow"></div><div class="die"><div class="cube cube${k}">${faces.map(([c, v]) => faceHTML(c, v)).join('')}</div></div></div>`).join('');
+})();
+(function floatDice() { // xúc xắc mờ trôi lên trong nền sảnh
+  for (let i = 0; i < 7; i++) {
+    const d = document.createElement('span');
+    d.className = 'fdice'; d.textContent = '🎲';
+    d.style.left = randInt(3, 95) + '%';
+    d.style.fontSize = randInt(20, 42) + 'px';
+    d.style.animationDuration = randInt(14, 26) + 's';
+    d.style.animationDelay = '-' + randInt(0, 26) + 's';
+    $('lobby').appendChild(d);
+  }
+})();
 (function sparkles() { // hạt vàng bay lên: chỉ dùng transform/opacity nên mượt
   for (let i = 0; i < 14; i++) {
     const sp = document.createElement('span');
@@ -529,6 +594,7 @@ setInterval(() => { jackpot += randInt(1e3, 5e4); if (Math.random() < .4) { feed
   }
 })();
 function topUp() { gameState.balance += 100000; renderAll(); showNotif('Đã nạp 100,000 xu thử nghiệm'); }
+function showRules() { showNotif('Tổng 3 xúc xắc từ 11 trở lên: Hà Thành. Từ 4 đến 10: Ngọc Xăm. Thắng nhận gấp đôi tiền cược.'); }
 function soon() { showNotif('Tính năng đang được phát triển'); }
 function openUser() {
   const acc = loadAccs()[currentUser];
