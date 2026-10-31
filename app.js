@@ -148,16 +148,8 @@ function placeWindow(t) {
   let x = t.id === 1 ? x1 : x1 + w + gap;
   if (x + w > innerWidth - 8) x = Math.max(8, Math.min(x1 + 40 * (t.id - 1), innerWidth - w - 8));
   t.x = x; t.y = 70 + (t.id - 1) * 12; t.placed = true;
-  moveWin(t); clampWin(t);
-}
-function clampWin(t) { // giữ cửa sổ luôn nằm trong màn hình (laptop, PC, điện thoại, xoay ngang)
-  if (!t.open) return;
-  const w = t.win.offsetWidth, h = t.win.offsetHeight;
-  t.x = Math.min(Math.max(t.x, 8), Math.max(8, innerWidth - w - 8));
-  t.y = Math.min(Math.max(t.y, 8), Math.max(8, innerHeight - h - 8));
   moveWin(t);
 }
-addEventListener('resize', () => Object.values(gameState.tables).forEach(clampWin));
 function moveWin(t) { t.win.style.transform = `translate3d(${t.x}px, ${t.y}px, 0)`; }
 
 
