@@ -1,564 +1,780 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SUNWIN - Mặt trời chiến thắng</title>
-    <style>
-        :root {
-            --primary: #2c3e50;
-            --accent: #e74c3c;
-            --win: #27ae60;
-            --blue-table: #2980b9;
-            --red-table: #c0392b;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SUNWIN - Mặt trời chiến thắng</title>
+<style>
+:root{--accent:#e74c3c;--win:#27ae60;--tai:#f1c40f;--xiu:#5dade2;--gold-1:#f6e0a0;--gold-2:#c9a14a;--gold-3:#7a5320;--panel-a:#5a3a1c;--panel-b:#2b1a0c;--glow:#f1c40f}
+.theme-blue{--panel-a:#1f4a6e;--panel-b:#0c2236;--glow:#4aa3e6}
+.theme-red{--panel-a:#7a2620;--panel-b:#340f0c;--glow:#ee6a52}
+*{box-sizing:border-box}
+body{font-family:'Segoe UI',Tahoma,Verdana,sans-serif;background:#1a1a1a;color:#fff;margin:0;overflow:hidden;display:flex;justify-content:center;align-items:center;height:100vh}
+button{font-family:inherit}
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #1a1a1a;
-            color: white;
-            margin: 0;
-            overflow: hidden;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
+/* Màn chào + chọn bàn */
+#welcomeScreen,#tableSelection{text-align:center}
+#tableSelection{display:none}
+.main-title{font-size:3rem;color:#f1c40f;text-shadow:0 0 20px rgba(241,196,15,.5);margin-bottom:30px}
+.btn-play{padding:15px 50px;font-size:1.5rem;background:var(--win);color:#fff;border:none;border-radius:30px;cursor:pointer}
+.table-cards{display:flex;gap:20px;justify-content:center;margin-top:20px;flex-wrap:wrap}
+.table-card{width:240px;padding:30px 20px;border-radius:16px;cursor:pointer;transition:.3s;font-weight:bold;font-size:1.2rem;border:3px solid var(--gold-2);box-shadow:0 0 0 2px var(--gold-3),0 8px 20px rgba(0,0,0,.5)}
+.card-blue{background:linear-gradient(160deg,#2c6a9a,#0c2236)}
+.card-red{background:linear-gradient(160deg,#a8322a,#340f0c)}
+.table-card:hover{transform:scale(1.05);filter:brightness(1.2)}
+.sel-status{font-size:.9rem;font-weight:normal;margin:10px 0;opacity:.9}
+.sel-road{display:flex;flex-wrap:wrap;justify-content:center;gap:3px;min-height:18px}
 
-        /* --- MÀN HÌNH CHÀO --- */
-        #welcomeScreen {
-            text-align: center;
-            transition: all 0.5s;
-        }
+/* Sân khấu: thanh trên + các cửa sổ bàn */
+#stage{display:none;position:fixed;inset:0;background:radial-gradient(ellipse at 50% 30%,#2a2230,#0e0b12)}
+#topbar{position:fixed;top:0;left:0;right:0;height:52px;z-index:1000;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:0 14px;background:linear-gradient(#2b1a0c,#150c05);border-bottom:2px solid var(--gold-3)}
+#dock{display:flex;gap:8px}
+.dock-btn{display:flex;flex-direction:column;align-items:flex-start;line-height:1.2;padding:5px 12px;border-radius:10px;border:2px solid var(--gold-3);background:linear-gradient(var(--panel-a),var(--panel-b));color:#fff;cursor:pointer;opacity:.6}
+.dock-btn small{font-size:.7rem;color:var(--gold-1)}
+.dock-btn.is-open{opacity:.9;border-color:var(--gold-2)}
+.dock-btn.is-focus{opacity:1;border-color:var(--gold-1);box-shadow:0 0 10px var(--glow)}
+#emptyHint{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:#888}
 
-        .main-title {
-            font-size: 3rem;
-            color: #f1c40f;
-            text-shadow: 0 0 20px rgba(241, 196, 15, 0.5);
-            margin-bottom: 30px;
-        }
+.tbl-window{position:absolute;left:0;top:0;display:none;width:min(460px,calc(100vw - 16px));padding:5px;border-radius:26px;background:linear-gradient(145deg,var(--gold-1),var(--gold-2) 35%,var(--gold-3) 70%,#c9a14a);box-shadow:0 12px 30px rgba(0,0,0,.6);transition:opacity .25s,filter .25s}
+.tbl-window.dim{opacity:.5;filter:saturate(.7)}
+.tbl-window.dim .win-body{pointer-events:none}
+.tbl-window.dim .dot-road{pointer-events:auto}
+.win-inner{border-radius:21px;border:2px solid rgba(0,0,0,.5);max-height:calc(100vh - 76px);display:flex;flex-direction:column;background:radial-gradient(ellipse at 50% 0%,rgba(255,220,150,.18),transparent 60%),linear-gradient(var(--panel-a),var(--panel-b))}
+.win-bar{position:relative;display:flex;align-items:center;justify-content:space-between;padding:8px 10px 0;height:44px;cursor:move;user-select:none;touch-action:none}
+.win-left{display:flex;align-items:center;gap:6px}
+.win-label{font-size:.75rem;font-weight:bold;padding:2px 8px;border-radius:6px}
+.ico-btn{width:28px;height:28px;border-radius:50%;border:2px solid var(--gold-2);background:linear-gradient(#4a3320,#1f130a);color:var(--gold-1);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
+.ico-btn:hover{filter:brightness(1.4)}
+.session-plate{position:absolute;top:-2px;left:50%;transform:translateX(-50%);min-width:130px;text-align:center;padding:4px 18px 6px;border-radius:0 0 16px 16px;background:linear-gradient(#3a2412,#1a0f06);border:2px solid var(--gold-2);border-top:none;color:var(--gold-1);font-weight:bold;pointer-events:none}
+.win-body{padding:14px 12px 14px;overflow-y:auto}
 
-        .btn-play {
-            padding: 15px 50px;
-            font-size: 1.5rem;
-            background: var(--win);
-            color: white;
-            border: none;
-            border-radius: 30px;
-            cursor: pointer;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-            transition: transform 0.2s;
-        }
+.board-main{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.side-panel{flex:1;min-width:0;padding:10px 6px;border-radius:16px;text-align:center;cursor:pointer;background:linear-gradient(rgba(0,0,0,.28),rgba(0,0,0,.55));border:2px solid var(--gold-3);box-shadow:inset 0 0 20px rgba(0,0,0,.5)}
+.side-panel.active{border-color:var(--gold-1);box-shadow:0 0 14px var(--glow),inset 0 0 20px rgba(0,0,0,.4)}
+.side-panel.win{animation:winPulse .8s ease-in-out infinite alternate;border-color:#fff}
+@keyframes winPulse{from{box-shadow:0 0 8px var(--tai)}to{box-shadow:0 0 26px var(--tai)}}
+.players{display:inline-block;font-size:.75rem;padding:1px 8px;border-radius:10px;background:rgba(0,0,0,.45);border:1px solid var(--gold-3);color:var(--gold-1)}
+.side-name{font-size:1.1rem;font-weight:bold;margin-top:5px}
+.side-T .side-name{color:var(--tai)}
+.side-X .side-name{color:var(--xiu)}
+.side-range{font-size:.7rem;opacity:.75;margin-bottom:6px}
+.pool,.mybet{padding:3px 2px;border-radius:14px;border:1px solid var(--gold-3);font-weight:bold;font-size:.82rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pool{background:rgba(60,10,10,.75);color:#ffd9a0}
+.mybet{margin-top:6px;background:rgba(0,0,0,.5);color:var(--tai);min-height:24px}
+.pill{display:block;width:100%;margin-top:6px;padding:4px;border-radius:14px;border:1px solid var(--gold-2);background:linear-gradient(#5a4126,#2b1a0c);color:var(--gold-1);font-weight:bold;font-size:.72rem;cursor:pointer}
+.staged{color:#fff;opacity:.8;font-size:.85em}
 
-        /* --- CHỌN BÀN --- */
-        #tableSelection {
-            display: none;
-            text-align: center;
-        }
+.dice-area{position:relative;flex:0 0 auto;width:150px;height:150px;border-radius:50%;border:7px solid var(--gold-2);background:radial-gradient(circle at 50% 40%,#1b1109,#050302);box-shadow:0 0 0 3px var(--gold-3),inset 0 0 40px rgba(0,0,0,.9);display:flex;justify-content:center;align-items:center}
+.timer{position:absolute;font-size:3.4rem;font-weight:600;color:var(--gold-1);text-shadow:0 0 18px rgba(246,224,160,.55);font-variant-numeric:tabular-nums;pointer-events:none}
+.timer.urgent{color:#ff6b5a;text-shadow:0 0 18px rgba(255,90,70,.7)}
+.dice-box{display:flex;gap:6px}
+.dice{width:32px;height:32px;background:#fff;border-radius:6px;display:grid;grid-template:repeat(3,1fr)/repeat(3,1fr);padding:3px;box-shadow:0 4px 8px rgba(0,0,0,.4)}
+@keyframes diceTungXoay{0%{transform:scale(1) rotate(0)}20%{transform:scale(1.3) rotate(180deg) translate(-8px,-8px)}40%{transform:scale(1.4) rotate(360deg) translate(12px,-16px)}60%{transform:scale(1.2) rotate(540deg) translate(-4px,12px)}80%{transform:scale(1.1) rotate(720deg) translate(8px,-4px)}100%{transform:scale(1) rotate(900deg)}}
+.dice.rolling{animation:diceTungXoay 1s ease-out forwards}
+.dot{background:#333;border-radius:50%;width:6px;height:6px;margin:auto;visibility:hidden}
+.disk{position:absolute;top:-7px;left:-7px;width:calc(100% + 14px);height:calc(100% + 14px);background:radial-gradient(circle,#8d6e63,#5d4037);border-radius:50%;cursor:grab;z-index:10;box-shadow:0 10px 20px rgba(0,0,0,.5);display:none;justify-content:center;align-items:center;font-weight:bold;color:rgba(255,255,255,.4);user-select:none;touch-action:none}
 
-        .table-cards {
-            display: flex;
-            gap: 20px;
-            justify-content: center;
-            margin-top: 20px;
-        }
+/* Hàng nốt lịch sử: đen = Hà Thành, trắng = Ngọc Xăm */
+.dot-road{display:flex;justify-content:center;gap:5px;margin:14px auto 4px;padding:6px 12px;width:fit-content;max-width:100%;border-radius:20px;background:rgba(0,0,0,.45);border:1px solid var(--gold-3)}
+.rd{width:13px;height:13px;border-radius:50%;flex:0 0 auto;cursor:help}
+.rd.T{background:#0b0b0b;border:1px solid var(--gold-2)}
+.rd.X{background:#f4f4f4;border:1px solid #888}
+.rd.latest{outline:2px solid var(--glow);outline-offset:2px}
+#tip{position:fixed;display:none;z-index:4000;pointer-events:none;background:#150c05;border:1px solid var(--gold-2);color:var(--gold-1);padding:5px 10px;border-radius:8px;font-size:.8rem;line-height:1.4;text-align:center;white-space:nowrap}
 
-        .table-card {
-            width: 200px;
-            padding: 40px;
-            border-radius: 15px;
-            cursor: pointer;
-            transition: 0.3s;
-            font-weight: bold;
-            font-size: 1.2rem;
-        }
+.result-text{text-align:center;min-height:28px;margin:8px 0 2px;font-weight:bold;color:#f1c40f}
+.chip-row{display:flex;flex-wrap:wrap;justify-content:center;gap:6px}
+.chip{min-width:56px;padding:7px 4px;border-radius:12px;border:2px solid var(--gold-2);background:linear-gradient(#4a3320,#1f130a);color:var(--gold-1);font-weight:bold;cursor:pointer}
+.chip:hover{filter:brightness(1.3)}
+.action-row{display:flex;justify-content:center;gap:8px;margin-top:10px}
+.act{flex:1;max-width:160px;padding:10px 6px;border-radius:22px;border:2px solid var(--gold-1);color:#fff;font-weight:bold;cursor:pointer;box-shadow:0 4px 10px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.35)}
+.act:hover{filter:brightness(1.15)}
+.act-allin{background:linear-gradient(#a24fd6,#5b1f86)}
+.act-confirm{background:linear-gradient(#f3c64f,#b07a14);color:#3a2300}
+.act-cancel{background:linear-gradient(#e24a4a,#8a1616)}
+.locked{opacity:.45;pointer-events:none}
 
-        .card-blue { background: var(--blue-table); }
-        .card-red { background: var(--red-table); }
-        .table-card:hover { transform: scale(1.05); filter: brightness(1.2); }
+/* Bead trên màn chọn bàn */
+.bead{width:18px;height:18px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:.55rem;font-weight:bold}
+.bead.T{background:#0b0b0b;color:#fff;border:1px solid var(--gold-2)}
+.bead.X{background:#f4f4f4;color:#222}
 
-        /* --- GIAO DIỆN CHÍNH --- */
-        #gameInterface {
-            display: none;
-            width: 100%;
-            max-width: 1000px;
-            height: 90vh;
-            flex-direction: column;
-            padding: 20px;
-        }
+/* Modal Lịch Sử Phiên */
+#histModal,#userModal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.65);z-index:3000;padding:10px}
+.hist-box{position:relative;width:min(860px,100%);max-height:96vh;overflow-y:auto;border-radius:20px;border:3px solid var(--gold-2);background:radial-gradient(ellipse at 50% 0%,#3a1650,#1a0a28 45%,#0c0512);padding:58px 18px 20px;box-shadow:0 0 0 2px var(--gold-3),0 20px 60px rgba(0,0,0,.8)}
+.hist-plate{position:absolute;top:-3px;left:50%;transform:translateX(-50%);padding:8px 46px 12px;border-radius:0 0 26px 26px;background:linear-gradient(#6a4a22,#2b1a0c);border:2px solid var(--gold-1);border-top:none;color:var(--gold-1);font-size:1.4rem;font-weight:bold;white-space:nowrap}
+.hist-close{position:absolute;top:8px;right:10px;width:36px;height:36px;font-size:1.2rem}
+.hist-sub{text-align:center;color:var(--gold-1);font-weight:bold;margin:2px 0}
+.hist-sub small{display:block;font-weight:normal;opacity:.7}
+.hist-box svg{width:100%;height:auto;display:block;margin-top:8px}
+.hist-box svg text{font-family:inherit;font-weight:700}
+.gl{stroke:rgba(255,255,255,.3);stroke-width:1}
+.yl{fill:var(--gold-1);font-size:15px}
+.dice-toggles{display:flex;justify-content:center;gap:16px;margin-top:14px;flex-wrap:wrap}
+.tg{padding:8px 18px;border-radius:24px;border:2px solid var(--gold-1);color:#fff;font-weight:bold;cursor:pointer;display:flex;align-items:center;gap:8px;box-shadow:inset 0 1px 0 rgba(255,255,255,.4)}
+.tg .chk{width:20px;height:20px;border-radius:50%;background:rgba(255,255,255,.9);color:#333;font-size:.75rem;display:inline-flex;align-items:center;justify-content:center}
+.tg.off{opacity:.4}.tg.off .chk{background:transparent;border:1px solid #fff;color:transparent}
+.tg1{background:linear-gradient(#f3c64f,#a87510);color:#3a2300}
+.tg2{background:linear-gradient(#e0343c,#7a0e14)}
+.tg3{background:linear-gradient(#b94de6,#5a1b86)}
 
-        .game-header {
-            display: flex;
-            justify-content: space-between;
-            background: #222;
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 10px;
-        }
+.notif{position:fixed;top:60px;left:50%;transform:translateX(-50%);background:var(--accent);padding:10px 20px;border-radius:5px;z-index:2000;display:none}
+@media (max-width:640px){.main-title{font-size:2rem}.rd{width:10px;height:10px}.dot-road{gap:3px}.dock-btn small{display:none}}
 
-        /* KHU VỰC ĐĨA & XÚC XẮC */
-        .dice-area {
-            position: relative;
-            height: 250px;
-            background: #064e3b;
-            border: 10px solid #5d4037;
-            border-radius: 50%;
-            width: 250px;
-            margin: 20px auto;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            box-shadow: inset 0 0 50px rgba(0,0,0,0.5);
-            overflow: visible; /* Cho phép đĩa kéo ra ngoài viền tròn */
-        }
+/* Đăng nhập / đăng ký */
+#authScreen{text-align:center}
+.auth-card{width:min(400px,92vw);margin:0 auto;padding:24px 26px 28px;border-radius:22px;border:3px solid var(--gold-2);background:linear-gradient(#2b1a0c,#150c05);box-shadow:0 0 0 2px var(--gold-3),0 20px 50px rgba(0,0,0,.7);text-align:left}
+.auth-tabs{display:flex;gap:8px;margin-bottom:14px}
+.auth-tabs button{flex:1;padding:10px;border-radius:20px;border:2px solid var(--gold-3);background:#1a0f06;color:var(--gold-1);font-weight:bold;cursor:pointer}
+.auth-tabs button.on{background:linear-gradient(#f3c64f,#b07a14);color:#3a2300;border-color:var(--gold-1)}
+.auth-card label{display:block;font-size:.8rem;color:var(--gold-1);margin-top:8px}
+.auth-card input{width:100%;padding:11px 14px;margin-top:4px;border-radius:12px;border:1px solid var(--gold-3);background:#0f0904;color:#fff;font-size:1rem}
+.auth-card input:focus{outline:2px solid var(--gold-2)}
+#authMsg{min-height:22px;margin:10px 0 4px;font-size:.85rem;text-align:center}
+.auth-card .act{width:100%;max-width:none;margin-top:6px}
 
-        .dice-container {
-            display: flex;
-            gap: 15px;
-        }
-
-        /* Xúc sắc chấm tròn và animation tung xoáy */
-        .dice {
-            width: 50px;
-            height: 50px;
-            background: white;
-            border-radius: 8px;
-            display: grid;
-            grid-template: repeat(3, 1fr) / repeat(3, 1fr);
-            padding: 5px;
-            box-sizing: border-box;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-            transition: transform 0.1s linear;
-        }
-
-        @keyframes diceTungXoay {
-            0% { transform: scale(1) rotate(0deg) translate(0, 0); }
-            20% { transform: scale(1.3) rotate(180deg) translate(-10px, -10px); }
-            40% { transform: scale(1.4) rotate(360deg) translate(15px, -20px); }
-            60% { transform: scale(1.2) rotate(540deg) translate(-5px, 15px); }
-            80% { transform: scale(1.1) rotate(720deg) translate(10px, -5px); }
-            100% { transform: scale(1) rotate(900deg) translate(0, 0); }
-        }
-
-        .dice.rolling {
-            animation: diceTungXoay 1s ease-out forwards;
-        }
-
-        .dot {
-            background: #333;
-            border-radius: 50%;
-            width: 8px;
-            height: 8px;
-            margin: auto;
-            visibility: hidden;
-        }
-
-        /* Đĩa úp */
-        #diskOverlay {
-            position: absolute;
-            top: -10px; left: -10px;
-            width: calc(100% + 20px);
-            height: calc(100% + 20px);
-            background: radial-gradient(circle, #8d6e63, #5d4037);
-            border-radius: 50%;
-            cursor: grab;
-            display: none;
-            z-index: 10;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-weight: bold;
-            color: rgba(255,255,255,0.4);
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
-            user-select: none;
-            transform: translate(0px, 0px);
-            transition: none;
-        }
-
-        /* KHU VỰC CƯỢC */
-        .betting-panel {
-            display: flex;
-            justify-content: space-around;
-            margin-top: 20px;
-        }
-
-        .bet-box {
-            width: 45%;
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-            background: #333;
-            border: 2px solid transparent;
-            cursor: pointer;
-        }
-
-        .bet-box.active { border-color: #f1c40f; background: #444; }
-
-        /* LỊCH SỬ */
-        #historyTable {
-            flex: 1;
-            margin-top: 20px;
-            background: #222;
-            border-radius: 10px;
-            overflow-y: auto;
-            padding: 10px;
-        }
-
-        .history-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px;
-            border-bottom: 1px solid #333;
-            font-size: 0.9rem;
-        }
-
-        .notif {
-            position: fixed;
-            top: 20px;
-            background: var(--accent);
-            padding: 10px 20px;
-            border-radius: 5px;
-            z-index: 100;
-            display: none;
-        }
-    </style>
+/* Sảnh chờ */
+#lobby{display:none;position:fixed;inset:0;flex-direction:column;background:radial-gradient(ellipse at 50% 0%,#4a2a18,#1c0f09 55%,#0c0604)}
+.lb-top{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 14px;background:linear-gradient(#5a3a1c,#2b1a0c);border-bottom:2px solid var(--gold-2)}
+.lb-user{display:flex;align-items:center;gap:10px;cursor:pointer;min-width:0}
+.avatar{flex:0 0 auto;width:52px;height:52px;border-radius:50%;border:3px solid var(--gold-2);background:radial-gradient(#7a5a30,#2b1a0c);display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-weight:bold;color:var(--gold-1);box-shadow:0 0 10px rgba(201,161,74,.4)}
+.lb-name{padding:6px 18px;border-radius:14px;background:#120a05;border:1px solid var(--gold-3);color:var(--gold-1);font-weight:bold;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:200px}
+.lb-money{display:flex;align-items:center;gap:8px;padding:4px 6px 4px 14px;border-radius:26px;border:2px solid var(--gold-2);background:#120a05;min-width:200px;justify-content:space-between}
+.lb-money .coin{font-size:1.4rem;font-weight:bold;color:var(--gold-1)}
+#lbBalance{flex:1;text-align:center;font-size:1.3rem;color:var(--gold-1)}
+.lb-money button{width:34px;height:34px;border-radius:50%;border:none;background:linear-gradient(#f3c64f,#b07a14);color:#3a2300;font-size:1.4rem;font-weight:bold;cursor:pointer}
+.lb-right{display:flex;gap:6px}
+.lb-btn{display:flex;flex-direction:column;align-items:center;padding:4px 14px;background:none;border:none;color:var(--gold-1);cursor:pointer;font-size:1.2rem}
+.lb-btn small{font-size:.7rem}
+.lb-tabs{display:flex;justify-content:center;gap:6px;flex-wrap:wrap;margin:12px auto;padding:4px 10px;border-radius:20px;border:1px solid var(--gold-3);background:rgba(0,0,0,.4);width:fit-content;max-width:96vw}
+.lb-tabs button{padding:4px 16px;border-radius:16px;border:none;background:none;color:var(--gold-1);font-weight:bold;cursor:pointer}
+.lb-tabs button.on{background:linear-gradient(#7a5a30,#3a2412);border:1px solid var(--gold-2)}
+.lb-main{flex:1;overflow-y:auto;padding:10px;text-align:center}
+#lbEmpty{display:none;color:#999;margin-top:60px}
+.lb-bottom{display:flex;align-items:flex-end;justify-content:center;gap:0;margin:0 auto;width:min(760px,100%);background:linear-gradient(#5a3a1c,#2b1a0c);border-top:2px solid var(--gold-2);border-radius:18px 18px 0 0;padding:6px 10px}
+.lb-bottom button{flex:1;background:none;border:none;color:var(--gold-1);cursor:pointer;padding:6px;font-size:.8rem;display:flex;flex-direction:column;align-items:center;gap:2px}
+.lb-bottom .ico{font-size:1.4rem}
+.lb-bottom .rut{flex:2.2;margin:-10px 6px 2px;padding:12px;border-radius:14px;border:2px solid var(--gold-1);background:linear-gradient(#f3c64f,#a87510);color:#5a1a0c;font-size:1.3rem;font-weight:bold;font-style:italic;letter-spacing:2px}
+.user-box{width:min(620px,100%)}
+.u-grid{display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start}
+.u-left{flex:1 1 240px;text-align:center}
+.u-left .avatar{width:96px;height:96px;font-size:2.8rem;margin:0 auto}
+.u-name{font-size:1.4rem;font-weight:bold;color:var(--gold-1);margin-top:10px}
+.u-row{display:flex;align-items:center;justify-content:center;gap:20px;margin-top:14px;font-size:1.3rem;color:var(--gold-1)}
+.u-right{flex:0 1 200px;display:flex;flex-direction:column;gap:12px;margin:0 auto}
+.u-right .act{max-width:none;background:linear-gradient(#6a4a22,#2b1a0c);color:var(--gold-1)}
+.u-warn{text-align:center;font-size:.72rem;color:#e8c46a;margin-top:16px}
+.back-btn{background:none;border:1px solid var(--gold-2);color:var(--gold-1);cursor:pointer;border-radius:8px;padding:5px 10px}
+</style>
 </head>
 <body>
+<div id="notif" class="notif"></div>
+<div id="tip"></div>
 
-    <div id="notif" class="notif"></div>
+<div id="authScreen">
+  <h1 class="main-title">SunWin - Mặt trời chiến thắng</h1>
+  <div class="auth-card">
+    <div class="auth-tabs"><button id="tabLogin" class="on" onclick="authTab('login')">ĐĂNG NHẬP</button><button id="tabReg" onclick="authTab('register')">ĐĂNG KÝ</button></div>
+    <form id="loginForm" onsubmit="doLogin();return false">
+      <label>Tên đăng nhập</label><input id="lgUser" autocomplete="username">
+      <label>Mật khẩu</label><input id="lgPass" type="password" autocomplete="current-password">
+      <button class="act act-confirm" style="margin-top:16px" type="submit">ĐĂNG NHẬP</button>
+    </form>
+    <form id="regForm" style="display:none" onsubmit="doRegister();return false">
+      <label>Tên đăng nhập (4-20 ký tự: chữ, số, dấu _)</label><input id="regUser" autocomplete="username">
+      <label>Mật khẩu (từ 6 ký tự)</label><input id="regPass" type="password" autocomplete="new-password">
+      <label>Xác minh lại mật khẩu</label><input id="regPass2" type="password" autocomplete="new-password">
+      <label>Tên hiển thị (2-16 ký tự)</label><input id="regName" maxlength="16">
+      <button class="act act-confirm" style="margin-top:16px" type="submit">ĐĂNG KÝ</button>
+    </form>
+    <div id="authMsg"></div>
+  </div>
+</div>
 
-    <div id="welcomeScreen">
-        <h1 class="main-title">SunWin - Mặt trời chiến thắng</h1>
-        <button class="btn-play" onclick="showSelection()">CHƠI NGAY</button>
+<div id="lobby">
+  <div class="lb-top">
+    <div class="lb-user" onclick="openUser()"><div class="avatar" id="lbAvatar">A</div><div class="lb-name" id="lbName"></div></div>
+    <div class="lb-money"><span class="coin">$</span><span id="lbBalance">0</span><button title="Nạp xu thử nghiệm" onclick="topUp()">+</button></div>
+    <div class="lb-right"><button class="lb-btn" onclick="soon()">🔔<small>Tin Tức</small></button><button class="lb-btn" onclick="soon()">⚙<small>Cài Đặt</small></button></div>
+  </div>
+  <div class="lb-tabs" id="lbTabs">
+    <button class="on" onclick="setTab(this)">ALL</button><button onclick="setTab(this)">MINIGAMES</button><button onclick="setTab(this)">SLOTS</button><button onclick="setTab(this)">GAME BÀI</button><button onclick="setTab(this)">LIVESTREAM</button>
+  </div>
+  <div class="lb-main">
+    <div class="table-cards" id="lbCards">
+      <div class="table-card card-blue" onclick="openTable(1)">BÀN XANH<div class="sel-status" id="selStatus1"></div><div class="sel-road" id="selRoad1"></div></div>
+      <div class="table-card card-red" onclick="openTable(2)">BÀN ĐỎ<div class="sel-status" id="selStatus2"></div><div class="sel-road" id="selRoad2"></div></div>
     </div>
+    <div id="lbEmpty">Sắp có thêm trò chơi trong mục này.</div>
+  </div>
+  <div class="lb-bottom">
+    <button onclick="soon()"><span class="ico">₿</span>Crypto</button>
+    <button onclick="soon()"><span class="ico">💞</span>Idol</button>
+    <button class="rut" onclick="soon()">RÚT TIỀN</button>
+    <button onclick="soon()"><span class="ico">⚠️</span>Cảnh báo</button>
+    <button onclick="soon()"><span class="ico">💬</span>Live Chat</button>
+  </div>
+</div>
 
-    <div id="tableSelection">
-        <h2 style="color: #f1c40f;">HÃY CHỌN BÀN CHƠI</h2>
-        <div class="table-cards">
-            <div class="table-card card-blue" onclick="joinTable(1)">BÀN XANH</div>
-            <div class="table-card card-red" onclick="joinTable(2)">BÀN ĐỎ</div>
-        </div>
+<div id="stage">
+  <div id="topbar">
+    <div><button class="back-btn" onclick="goLobby()">← Sảnh</button> &nbsp;Tiền của bạn: <span id="balance" style="color:#2ecc71">100,000</span>đ</div>
+    <div id="dock">
+      <button class="dock-btn theme-blue" id="dock1" onclick="openTable(1)"></button>
+      <button class="dock-btn theme-red" id="dock2" onclick="openTable(2)"></button>
     </div>
+  </div>
+  <div id="emptyHint">Chọn một bàn ở thanh phía trên để chơi</div>
+  <div id="windows"></div>
+</div>
 
-    <div id="gameInterface">
-        <div class="game-header">
-            <div>Tiền của bạn: <span id="balance" style="color: #2ecc71;">100,000</span>đ</div>
-            <div id="tableTag" style="padding: 2px 10px; border-radius: 5px; font-weight: bold;"></div>
-            <button onclick="backToMenu()" style="background:none; border: 1px solid #777; color: white; cursor: pointer;">Đổi bàn</button>
-        </div>
+<div id="userModal" onclick="if(event.target===this)closeUser()">
+  <div class="hist-box user-box">
+    <div class="hist-plate">Thông Tin User</div>
+    <button class="ico-btn hist-close" onclick="closeUser()">✕</button>
+    <div class="u-grid">
+      <div class="u-left">
+        <div class="avatar" id="uAvatar">A</div>
+        <div class="u-name" id="uName"></div>
+        <div style="color:#ddd;margin-top:4px">ID: <span id="uId"></span></div>
+        <div style="color:#999;font-size:.8rem">Tài khoản: <span id="uLogin"></span></div>
+        <div class="u-row"><span>$</span><span id="uBal">0</span></div>
+        <div class="u-row"><span>🔒</span><span>0</span></div>
+        <div style="margin-top:14px;display:flex;gap:8px;justify-content:center;align-items:center;flex-wrap:wrap">SĐT: <button class="chip" onclick="soon()">Kích Hoạt</button></div>
+        <div style="margin-top:8px;display:flex;gap:8px;justify-content:center;align-items:center;flex-wrap:wrap">Email: <button class="chip" onclick="soon()">Kích Hoạt</button></div>
+      </div>
+      <div class="u-right">
+        <button class="act" onclick="soon()">KÉT SẮT</button>
+        <button class="act" onclick="soon()">LỊCH SỬ CHƠI</button>
+        <button class="act" onclick="soon()">ĐỔI MẬT KHẨU</button>
+        <button class="act" onclick="logout()">ĐĂNG XUẤT</button>
+      </div>
+    </div>
+    <div class="u-warn">Dữ liệu chỉ lưu trên trình duyệt này. Tiền trong game là tiền ảo.</div>
+  </div>
+</div>
 
-        <div style="text-align: center; font-size: 1.5rem;">Thời gian cược: <span id="timer" style="color: #e74c3c; font-weight: bold;">40</span>s</div>
+<div id="histModal" onclick="if(event.target===this)closeHistory()">
+  <div class="hist-box">
+    <div class="hist-plate">Lịch Sử Phiên</div>
+    <button class="ico-btn hist-close" onclick="closeHistory()">✕</button>
+    <div class="hist-sub"><small id="histTable"></small><span id="histLatest"></span></div>
+    <div class="hist-sub" id="histRes"></div>
+    <svg id="chartTotal" viewBox="0 0 800 225"></svg>
+    <svg id="chartDice" viewBox="0 0 800 190"></svg>
+    <div class="dice-toggles">
+      <button class="tg tg1" id="tg0" onclick="toggleDice(0)">XÍ NGẦU 1 <span class="chk">✓</span></button>
+      <button class="tg tg2" id="tg1" onclick="toggleDice(1)">XÍ NGẦU 2 <span class="chk">✓</span></button>
+      <button class="tg tg3" id="tg2" onclick="toggleDice(2)">XÍ NGẦU 3 <span class="chk">✓</span></button>
+    </div>
+  </div>
+</div>
 
+<script>
+const HISTORY_SIZE = 20, BET_TIME = 40, REVEAL_TIME = 5, RESULT_TIME = 5;
+const diceLayouts = {1:[4],2:[0,8],3:[0,4,8],4:[0,2,6,8],5:[0,2,4,6,8],6:[0,2,3,5,6,8]};
+const SIDE_NAME = { T: 'Hà Thành', X: 'Ngọc Xăm' };
+const CHIPS = [['1K',1e3],['10K',1e4],['50K',5e4],['100K',1e5],['500K',5e5],['5M',5e6],['10M',1e7],['50M',5e7]];
+const randInt = (a, b) => Math.floor(Math.random() * (b - a + 1)) + a;
+const $ = (id) => document.getElementById(id);
+
+// ============ TRẠNG THÁI: mỗi bàn có state riêng nên 2 bàn chạy song song, tiền dùng chung ============
+function rollDice() {
+  const d = [0, 0, 0].map(() => randInt(1, 6));
+  const total = d[0] + d[1] + d[2];
+  return { d, total, result: total >= 11 ? 'T' : 'X' };
+}
+function seedCrowd(t) { // số liệu "người chơi khác" chỉ để trang trí
+  t.pool = { T: randInt(5e6, 40e6), X: randInt(5e6, 40e6) };
+  t.players = { T: randInt(800, 2000), X: randInt(800, 2000) };
+}
+function makeTable(id, name, theme, color, startTimer, base) {
+  const history = [];
+  for (let i = 0; i < HISTORY_SIZE; i++) { // 20 phiên ngẫu nhiên, mới nhất ở đầu
+    const r = rollDice();
+    history.push({ session: base + HISTORY_SIZE - i, ...r, time: new Date(Date.now() - (i + 1) * 45000).toLocaleTimeString() });
+  }
+  const t = { id, name, theme, color, history, open: false, placed: false, x: 0, y: 64,
+    session: base + HISTORY_SIZE + 1, phase: 'betting', timer: startTimer, phaseLeft: 0,
+    dice: history[0].d.slice(), pending: null, side: null, staged: 0, betAmount: 0, dotKey: null };
+  seedCrowd(t);
+  return t;
+}
+const gameState = { balance: 100000, focus: null,
+  tables: { 1: makeTable(1, "Xanh", "theme-blue", "#2980b9", 40, 3309000),
+            2: makeTable(2, "Đỏ", "theme-red", "#c0392b", 25, 3318000) } };
+const canBet = (t) => t.phase === 'betting' && t.timer > 1;
+const actTable = (id) => { const t = gameState.tables[id]; return t && t.open && gameState.focus === id ? t : null; };
+
+// ============ CỬA SỔ BÀN ============
+function windowHTML(t) {
+  const id = t.id;
+  const side = (s, name, range) => `
+    <div class="side-panel side-${s}" data-r="box${s}" onclick="selectSide(${id},'${s}')">
+      <div class="players">👥 <span data-r="players${s}">0</span></div>
+      <div class="side-name">${name}</div><div class="side-range">${range}</div>
+      <div class="pool" data-r="pool${s}">0</div>
+      <button class="pill" type="button">ĐẶT CƯỢC</button>
+      <div class="mybet" data-r="bet${s}">0</div>
+    </div>`;
+  return `<div class="win-inner">
+    <div class="win-bar" data-r="bar">
+      <div class="win-left">
+        <button class="ico-btn" title="Lịch sử phiên" onclick="openHistory(${id})"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,18 8,8 14,15 22,4"/></svg></button>
+        <span class="win-label" style="background:${t.color}">BÀN ${t.name.toUpperCase()}</span>
+      </div>
+      <div class="session-plate" data-r="sessionNo">#0</div>
+      <button class="ico-btn" title="Đóng bàn" onclick="closeTable(${id})">✕</button>
+    </div>
+    <div class="win-body">
+      <div class="board-main">
+        ${side('T', 'Hà Thành', '(11 - 17)')}
         <div class="dice-area">
-            <div id="diskOverlay" style="display: none;">KÉO ĐỂ MỞ</div>
-            <div class="dice-container">
-                <div class="dice" id="d1"></div>
-                <div class="dice" id="d2"></div>
-                <div class="dice" id="d3"></div>
-            </div>
+          <div class="disk" data-r="disk">KÉO ĐỂ MỞ</div>
+          <div class="dice-box" data-r="diceBox"><div class="dice" data-r="d1"></div><div class="dice" data-r="d2"></div><div class="dice" data-r="d3"></div></div>
+          <div class="timer" data-r="timer">40</div>
         </div>
+        ${side('X', 'Ngọc Xăm', '(4 - 10)')}
+      </div>
+      <div class="dot-road" data-r="dotRoad"></div>
+      <div class="result-text" data-r="result"></div>
+      <div class="chip-row" data-r="chipRow">${CHIPS.map(c => `<button class="chip" onclick="addChip(${id},${c[1]})">${c[0]}</button>`).join('')}</div>
+      <div class="action-row" data-r="controls">
+        <button class="act act-allin" onclick="allIn(${id})">ALL-IN</button>
+        <button class="act act-confirm" onclick="confirmBet(${id})">ĐẶT CƯỢC</button>
+        <button class="act act-cancel" onclick="cancelBet(${id})">HỦY</button>
+      </div>
+    </div></div>`;
+}
 
-        <div id="resultText" style="text-align: center; height: 30px; font-size: 1.2rem; font-weight: bold; color: #f1c40f;"></div>
+function buildWindow(t) {
+  const win = document.createElement('div');
+  win.className = 'tbl-window ' + t.theme;
+  win.innerHTML = windowHTML(t);
+  t.win = win; t.r = {};
+  win.querySelectorAll('[data-r]').forEach(el => t.r[el.dataset.r] = el);
+  $('windows').appendChild(win);
+  win.addEventListener('pointerdown', () => focusTable(t.id), true); // bấm vào bàn mờ để chuyển bàn
 
-        <div class="betting-panel">
-            <div class="bet-box" id="boxT" onclick="selectSide('T')">
-                <div style="font-size: 1.5rem; font-weight: bold;">Hà Thành</div>
-                <div style="font-size: 0.8rem;">(11 - 17)</div>
-                <div id="betAmtT" style="color: #f1c40f; margin-top: 5px;">0</div>
-            </div>
-            <div class="bet-box" id="boxX" onclick="selectSide('X')">
-                <div style="font-size: 1.5rem; font-weight: bold;">Ngọc Xăm</div>
-                <div style="font-size: 0.8rem;">(4 - 10)</div>
-                <div id="betAmtX" style="color: #f1c40f; margin-top: 5px;">0</div>
-            </div>
-        </div>
+  // Kéo cả cửa sổ bằng thanh tiêu đề
+  let drag = null;
+  const bar = t.r.bar;
+  bar.addEventListener('pointerdown', (e) => {
+    if (e.target.closest('button')) return;
+    drag = { dx: e.clientX - t.x, dy: e.clientY - t.y };
+    bar.setPointerCapture(e.pointerId);
+  });
+  bar.addEventListener('pointermove', (e) => {
+    if (!drag) return;
+    const w = win.offsetWidth;
+    t.x = Math.min(Math.max(e.clientX - drag.dx, 90 - w), innerWidth - 90);
+    t.y = Math.min(Math.max(e.clientY - drag.dy, 56), innerHeight - 50);
+    win.style.left = t.x + 'px'; win.style.top = t.y + 'px';
+  });
+  ['pointerup', 'pointercancel'].forEach(ev => bar.addEventListener(ev, () => drag = null));
 
-        <div style="display: flex; justify-content: center; gap: 10px; margin-top: 15px;">
-            <button onclick="addBet(1000)" style="padding: 10px; cursor: pointer;">+1K</button>
-            <button onclick="addBet(5000)" style="padding: 10px; cursor: pointer;">+5K</button>
-            <button onclick="addBet(10000)" style="padding: 10px; cursor: pointer;">+10K</button>
-            <button onclick="gameState.betAmount = gameState.balance; updateUI();" style="padding: 10px; cursor: pointer; background: #e67e22; border:none; color:white;">TẤT TAY</button>
-        </div>
+  setupDisk(t);
+}
 
-        <div id="historyTable">
-            <div style="text-align: center; border-bottom: 1px solid #444; padding-bottom: 5px;">LỊCH SỬ BÀN</div>
-            <div id="historyList"></div>
-        </div>
-    </div>
+function setupDisk(t) {
+  const disk = t.r.disk; let drag = null;
+  disk.addEventListener('pointerdown', (e) => {
+    if (t.phase !== 'reveal' || gameState.focus !== t.id) return;
+    drag = { x: e.clientX, y: e.clientY };
+    disk.setPointerCapture(e.pointerId);
+    disk.style.cursor = 'grabbing'; disk.style.transition = 'none';
+  });
+  disk.addEventListener('pointermove', (e) => {
+    if (!drag) return;
+    if (t.phase !== 'reveal') { drag = null; return; }
+    const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+    disk.style.transform = `translate(${dx}px, ${dy}px)`;
+    if (Math.hypot(dx, dy) > 120) { drag = null; settle(t); renderAll(); } // kéo xa 120px = mở đĩa
+  });
+  const release = () => {
+    if (!drag) return;
+    drag = null;
+    disk.style.cursor = 'grab';
+    disk.style.transition = 'transform .2s ease-out';
+    disk.style.transform = 'translate(0,0)';
+    setTimeout(() => disk.style.transition = 'none', 200);
+  };
+  disk.addEventListener('pointerup', release);
+  disk.addEventListener('pointercancel', release);
+}
 
-    <script>
-        const gameState = {
-            balance: 100000,
-            currentTable: null,
-            selectedSide: null,
-            betAmount: 0,
-            isOpening: false,
-            revealTimer: null, // Quản lý bộ đếm thời gian tự động mở đĩa
-            tables: {
-                1: { name: "Xanh", color: "#2980b9", history: [], timer: 40, isRolling: false },
-                2: { name: "Đỏ", color: "#c0392b", history: [], timer: 25, isRolling: false }
-            }
-        };
+function placeWindow(t) {
+  const w = t.win.offsetWidth, gap = 16;
+  const x1 = Math.max(8, (innerWidth - 2 * w - gap) / 2);
+  let x = t.id === 1 ? x1 : x1 + w + gap;
+  if (x + w > innerWidth - 8) x = Math.max(8, Math.min(x1 + 40 * (t.id - 1), innerWidth - w - 8));
+  t.x = x; t.y = 64 + (t.id - 1) * 12; t.placed = true;
+  t.win.style.left = t.x + 'px'; t.win.style.top = t.y + 'px';
+}
 
-        const diceLayouts = {
-            1: [4],
-            2: [0, 8],
-            3: [0, 4, 8],
-            4: [0, 2, 6, 8],
-            5: [0, 2, 4, 6, 8],
-            6: [0, 2, 3, 5, 6, 8]
-        };
 
-        function showSelection() {
-            document.getElementById('welcomeScreen').style.display = 'none';
-            document.getElementById('tableSelection').style.display = 'block';
-        }
+function openTable(id) {
+  const t = gameState.tables[id];
+  $('lobby').style.display = 'none';
+  $('stage').style.display = 'block';
+  if (!t.open) {
+    t.open = true; t.win.style.display = 'block';
+    if (!t.placed) placeWindow(t);
+  }
+  focusTable(id);
+}
 
-        function joinTable(id) {
-            gameState.currentTable = id;
-            document.getElementById('tableSelection').style.display = 'none';
-            document.getElementById('gameInterface').style.display = 'flex';
-            
-            const tag = document.getElementById('tableTag');
-            tag.textContent = "BÀN " + gameState.tables[id].name.toUpperCase();
-            tag.style.backgroundColor = gameState.tables[id].color;
-            
-            updateUI();
-            renderHistory();
+function focusTable(id) {
+  if (gameState.focus === id) return;
+  gameState.focus = id;
+  renderAll();
+}
 
-            // Đồng bộ giao diện đĩa úp nếu bàn đang chọn đang ở trạng thái nặn
-            const disk = document.getElementById('diskOverlay');
-            if (gameState.isOpening) {
-                disk.style.display = 'flex';
-            } else {
-                disk.style.display = 'none';
-            }
-        }
+function closeTable(id) {
+  const t = gameState.tables[id];
+  t.staged = 0; // tiền chưa xác nhận bỏ đi; cược đã xác nhận vẫn được trả thưởng khi bàn mở kết quả
+  t.open = false; t.win.style.display = 'none';
+  if (gameState.focus === id) {
+    const other = Object.values(gameState.tables).find(x => x.open);
+    gameState.focus = other ? other.id : null;
+  }
+  if (histState.id === id) closeHistory();
+  renderAll();
+}
 
-        function backToMenu() {
-            document.getElementById('gameInterface').style.display = 'none';
-            document.getElementById('tableSelection').style.display = 'block';
-            gameState.selectedSide = null;
-            gameState.betAmount = 0;
-            updateUI();
-        }
+// ============ ĐẶT CƯỢC (chỉ thao tác được trên bàn đang rõ) ============
+function selectSide(id, side) {
+  const t = actTable(id);
+  if (!t || !canBet(t)) return;
+  if (t.betAmount > 0 && t.side !== side) { showNotif(`Bạn đã cược cửa ${SIDE_NAME[t.side]}. Bấm "HỦY" nếu muốn đổi cửa.`); return; }
+  t.side = side; renderAll();
+}
+function checkCanBet(t) {
+  if (!canBet(t)) { showNotif("Đã hết thời gian đặt cược!"); return false; }
+  if (!t.side) { showNotif("Hãy chọn cửa cược trước!"); return false; }
+  return true;
+}
+function addChip(id, amt) {
+  const t = actTable(id);
+  if (!t || !checkCanBet(t)) return;
+  if (t.staged + amt > gameState.balance) { showNotif("Không đủ tiền!"); return; }
+  t.staged += amt; renderAll();
+}
+function allIn(id) { // chọn toàn bộ số dư, bấm ĐẶT CƯỢC mới trừ tiền
+  const t = actTable(id);
+  if (!t || !checkCanBet(t)) return;
+  if (gameState.balance <= 0) { showNotif("Bạn đã hết tiền!"); return; }
+  t.staged = gameState.balance; renderAll();
+}
+function confirmBet(id) {
+  const t = actTable(id);
+  if (!t || !checkCanBet(t)) return;
+  if (t.staged <= 0) { showNotif("Hãy chọn mức cược trước!"); return; }
+  if (t.staged > gameState.balance) { showNotif("Không đủ tiền!"); t.staged = 0; renderAll(); return; }
+  gameState.balance -= t.staged;
+  t.betAmount += t.staged; t.staged = 0; renderAll();
+}
+function cancelBet(id) { // lần 1 bỏ tiền đang chọn, lần 2 hoàn cược đã đặt
+  const t = actTable(id);
+  if (!t || !canBet(t)) return;
+  if (t.staged > 0) t.staged = 0;
+  else if (t.betAmount > 0) {
+    gameState.balance += t.betAmount; t.betAmount = 0; t.side = null;
+    showNotif("Đã hủy cược, tiền đã được hoàn lại.");
+  }
+  renderAll();
+}
 
-        function selectSide(side) {
-            if (gameState.isOpening || gameState.tables[gameState.currentTable].timer <= 1) return;
-            gameState.selectedSide = side;
-            updateUI();
-        }
+// ============ VÒNG ĐỜI MỖI PHIÊN ============
+function tickTable(t) {
+  if (t.phase === 'betting') {
+    t.timer--;
+    t.pool.T += randInt(2e5, 3e6); t.pool.X += randInt(2e5, 3e6);
+    t.players.T += randInt(0, 3); t.players.X += randInt(0, 3);
+    if (t.timer <= 0) startReveal(t);
+  } else if (t.phase === 'reveal') {
+    if (--t.phaseLeft <= 0) settle(t);
+  } else if (t.phase === 'result') {
+    if (--t.phaseLeft <= 0) newRound(t);
+  }
+}
+function startReveal(t) {
+  const r = rollDice();
+  t.dice = r.d; t.pending = r; t.staged = 0;
+  t.phase = 'reveal'; t.phaseLeft = REVEAL_TIME;
+}
+function settle(t) { // chạy cho cả bàn đang xem lẫn bàn ngầm / bàn đã đóng
+  if (t.phase !== 'reveal') return;
+  const { d, total, result } = t.pending;
+  if (t.betAmount > 0) {
+    const prefix = t.open && gameState.focus === t.id ? '' : `[Bàn ${t.name}] `;
+    if (t.side === result) {
+      gameState.balance += t.betAmount * 2;
+      showNotif(`${prefix}Chúc mừng! Bạn thắng ${t.betAmount.toLocaleString()}đ`);
+    } else showNotif(`${prefix}Rất tiếc! Bạn đã thua ${t.betAmount.toLocaleString()}đ`);
+  }
+  t.history.unshift({ session: t.session, d: d.slice(), total, result, time: new Date().toLocaleTimeString() });
+  if (t.history.length > HISTORY_SIZE) t.history.length = HISTORY_SIZE;
+  t.betAmount = 0; t.staged = 0; t.side = null;
+  t.phase = 'result'; t.phaseLeft = RESULT_TIME;
+}
+function newRound(t) {
+  t.session++; t.pending = null; t.timer = BET_TIME; t.phase = 'betting'; seedCrowd(t);
+}
+setInterval(() => { Object.values(gameState.tables).forEach(tickTable); renderAll(); }, 1000);
 
-        function addBet(amt) {
-            if (!gameState.selectedSide || gameState.isOpening) return;
-            if (gameState.balance >= amt) {
-                gameState.balance -= amt;
-                gameState.betAmount += amt;
-                updateUI();
-            } else {
-                showNotif("Không đủ tiền!");
-            }
-        }
+// ============ HIỂN THỊ ============
+function drawDice(el, value) {
+  if (el.dataset.v === String(value)) return;
+  el.dataset.v = value; el.innerHTML = '';
+  for (let i = 0; i < 9; i++) {
+    const dot = document.createElement('div');
+    dot.className = 'dot';
+    if (diceLayouts[value].includes(i)) dot.style.visibility = 'visible';
+    el.appendChild(dot);
+  }
+}
+function sideBetHTML(t, side) {
+  if (t.side !== side) return '0';
+  return t.betAmount.toLocaleString() + (t.staged > 0 ? ` <span class="staged">+${t.staged.toLocaleString()}</span>` : '');
+}
 
-        function updateUI() {
-            document.getElementById('balance').textContent = gameState.balance.toLocaleString();
-            document.getElementById('betAmtT').textContent = (gameState.selectedSide === 'T' ? gameState.betAmount : 0).toLocaleString();
-            document.getElementById('betAmtX').textContent = (gameState.selectedSide === 'X' ? gameState.betAmount : 0).toLocaleString();
-            
-            document.getElementById('boxT').className = 'bet-box' + (gameState.selectedSide === 'T' ? ' active' : '');
-            document.getElementById('boxX').className = 'bet-box' + (gameState.selectedSide === 'X' ? ' active' : '');
-        }
+function renderTable(t) {
+  if (!t.open) return;
+  const r = t.r;
+  t.win.classList.toggle('dim', gameState.focus !== t.id);
+  t.win.style.zIndex = gameState.focus === t.id ? 20 : 10;
 
-        function drawDice(id, value) {
-            const el = document.getElementById(id);
-            el.innerHTML = '';
-            for (let i = 0; i < 9; i++) {
-                const dot = document.createElement('div');
-                dot.className = 'dot';
-                if (diceLayouts[value].includes(i)) dot.style.visibility = 'visible';
-                el.appendChild(dot);
-            }
-        }
+  r.sessionNo.textContent = '#' + t.session;
+  ['T', 'X'].forEach(s => {
+    r['bet' + s].innerHTML = sideBetHTML(t, s);
+    r['pool' + s].textContent = (t.pool[s] + (t.side === s ? t.betAmount : 0)).toLocaleString();
+    r['players' + s].textContent = t.players[s].toLocaleString();
+    const win = t.phase === 'result' && t.history[0].result === s;
+    r['box' + s].className = `side-panel side-${s}` + (t.side === s ? ' active' : '') + (win ? ' win' : '');
+  });
+  const locked = !canBet(t);
+  r.chipRow.classList.toggle('locked', locked);
+  r.controls.classList.toggle('locked', locked);
 
-        // Logic thời gian chính
-        setInterval(() => {
-            Object.keys(gameState.tables).forEach(id => {
-                const table = gameState.tables[id];
-                if (table.isRolling) return;
+  const showCount = t.phase === 'betting' && t.timer > 1;
+  r.timer.textContent = String(Math.max(0, t.timer)).padStart(2, '0');
+  r.timer.style.display = showCount ? 'block' : 'none';
+  r.timer.classList.toggle('urgent', t.timer <= 5);
+  r.diceBox.style.visibility = showCount ? 'hidden' : 'visible';
+  drawDice(r.d1, t.dice[0]); drawDice(r.d2, t.dice[1]); drawDice(r.d3, t.dice[2]);
+  const rolling = t.phase === 'betting' && t.timer <= 1;
+  [r.d1, r.d2, r.d3].forEach(el => el.classList.toggle('rolling', rolling));
 
-                table.timer--;
+  if (t.phase === 'reveal') r.disk.style.display = 'flex';
+  else { r.disk.style.display = 'none'; r.disk.style.transform = 'translate(0,0)'; }
 
-                // HIỆU ỨNG TUNG XOÁY XÚC XẮC KHI CÒN ĐÚNG 1 GIÂY
-                if (table.timer === 1 && id == gameState.currentTable) {
-                    document.getElementById('d1').classList.add('rolling');
-                    document.getElementById('d2').classList.add('rolling');
-                    document.getElementById('d3').classList.add('rolling');
-                }
-                
-                if (id == gameState.currentTable) {
-                    document.getElementById('timer').textContent = Math.max(0, table.timer);
-                }
+  if (t.phase === 'reveal') r.result.textContent = `HÃY MỞ ĐĨA! (TỰ ĐỘNG MỞ SAU ${t.phaseLeft}S)`;
+  else if (t.phase === 'result') r.result.textContent = `${t.history[0].total} Điểm - ${SIDE_NAME[t.history[0].result]}`;
+  else r.result.textContent = '';
 
-                if (table.timer <= 0) {
-                    startReveal(id);
-                }
-            });
-        }, 1000);
+  // Hàng nốt lịch sử (cũ bên trái -> mới bên phải), chỉ vẽ lại khi có phiên mới
+  if (t.dotKey !== t.history[0].session) {
+    t.dotKey = t.history[0].session;
+    r.dotRoad.innerHTML = t.history.slice().reverse().map((h, i, a) =>
+      `<span class="rd ${h.result}${i === a.length - 1 ? ' latest' : ''}" data-s="${h.session}" data-d="${h.d.join('-')}" data-t="${h.total}" data-r="${h.result}"></span>`).join('');
+  }
+}
 
-        function startReveal(tableId) {
-            const table = gameState.tables[tableId];
-            table.isRolling = true;
-            
-            const v1 = Math.floor(Math.random() * 6) + 1;
-            const v2 = Math.floor(Math.random() * 6) + 1;
-            const v3 = Math.floor(Math.random() * 6) + 1;
-            const total = v1 + v2 + v3;
-            const result = total >= 11 ? 'T' : 'X';
+function renderDock() {
+  Object.values(gameState.tables).forEach(t => {
+    const st = t.phase === 'betting' ? `còn ${t.timer}s` : t.phase === 'reveal' ? 'đang mở đĩa' : 'có kết quả';
+    const b = $('dock' + t.id);
+    b.innerHTML = `<b>BÀN ${t.name.toUpperCase()}</b><small>#${t.session} · ${st}${t.betAmount > 0 ? ' · cược ' + t.betAmount.toLocaleString() : ''}</small>`;
+    b.className = `dock-btn ${t.theme}` + (t.open ? ' is-open' : '') + (gameState.focus === t.id ? ' is-focus' : '');
+  });
+  $('emptyHint').style.display = Object.values(gameState.tables).some(t => t.open) ? 'none' : 'block';
+}
 
-            if (tableId == gameState.currentTable) {
-                gameState.isOpening = true;
-                
-                // Tắt animation để xúc xắc dừng lại hiện điểm thật
-                setTimeout(() => {
-                    document.getElementById('d1').classList.remove('rolling');
-                    document.getElementById('d2').classList.remove('rolling');
-                    document.getElementById('d3').classList.remove('rolling');
-                    drawDice('d1', v1); drawDice('d2', v2); drawDice('d3', v3);
-                }, 100);
+function renderSelection() {
+  Object.values(gameState.tables).forEach(t => {
+    const st = t.phase === 'betting' ? `còn ${t.timer}s` : t.phase === 'reveal' ? 'đang mở đĩa' : 'đã có kết quả';
+    $('selStatus' + t.id).textContent = `Phiên #${t.session} - ${st}`;
+    $('selRoad' + t.id).innerHTML = t.history.slice(0, 10).map(h => `<span class="bead ${h.result}">${h.total}</span>`).join('');
+  });
+}
 
-                const disk = document.getElementById('diskOverlay');
-                disk.style.display = 'flex';
-                disk.style.transform = 'translate(0px, 0px)';
-                document.getElementById('resultText').textContent = "HÃY MỞ ĐĨA! (TỰ ĐỘNG MỞ SAU 5S)";
-                
-                enableDiskDragging(total, result);
+function renderAll() {
+  $('balance').textContent = gameState.balance.toLocaleString();
+  Object.values(gameState.tables).forEach(renderTable);
+  renderDock();
+  $('lbBalance').textContent = gameState.balance.toLocaleString();
+  if ($('lobby').style.display === 'flex') renderSelection();
+  if (currentUser && gameState.balance !== lastSavedBal) saveBalance();
+  if (histState.id !== null) renderHistModal(false);
+}
 
-                // TỰ ĐỘNG HIỆN KẾT QUẢ SAU 5 GIÂY NẾU KHÔNG KÉO ĐĨA
-                gameState.revealTimer = setTimeout(() => {
-                    finalizeResult(total, result);
-                }, 5000);
+// ============ TOOLTIP CHO NỐT ĐEN/TRẮNG ============
+document.addEventListener('mouseover', (e) => {
+  const d = e.target.closest && e.target.closest('.rd');
+  if (!d) return;
+  const tip = $('tip');
+  tip.innerHTML = `<b>#${d.dataset.s}</b> · ${d.dataset.r === 'T' ? '⚫ Hà Thành' : '⚪ Ngọc Xăm'}<br>${d.dataset.d} = ${d.dataset.t} điểm`;
+  tip.style.display = 'block';
+  const b = d.getBoundingClientRect();
+  tip.style.left = Math.min(Math.max(8, b.left + b.width / 2 - tip.offsetWidth / 2), innerWidth - tip.offsetWidth - 8) + 'px';
+  tip.style.top = (b.top - tip.offsetHeight - 8) + 'px';
+});
+document.addEventListener('mouseout', (e) => {
+  if (e.target.closest && e.target.closest('.rd')) $('tip').style.display = 'none';
+});
 
-            } else {
-                // Chạy ngầm cho bàn kia không ảnh hưởng người chơi
-                table.history.unshift({ total, result, time: new Date().toLocaleTimeString() });
-                table.timer = 40; 
-                table.isRolling = false;
-            }
-        }
+// ============ MODAL LỊCH SỬ PHIÊN (biểu đồ zíc zắc) ============
+const histState = { id: null, vis: [true, true, true], key: null };
+const DICE_COLORS = [{ line: '#ffee33', dot: '#f0c030' }, { line: '#e01010', dot: '#b80d14' }, { line: '#e020e0', dot: '#a43bd8' }];
 
-        // CHỨC NĂNG KÉO ĐĨA 360 ĐỘ TỰ DO
-        function enableDiskDragging(total, result) {
-            const disk = document.getElementById('diskOverlay');
-            let isDragging = false;
-            let startX = 0, startY = 0;
+function openHistory(id) { histState.id = id; $('histModal').style.display = 'flex'; renderHistModal(true); }
+function closeHistory() { histState.id = null; $('histModal').style.display = 'none'; }
+function toggleDice(k) { histState.vis[k] = !histState.vis[k]; renderHistModal(true); }
 
-            const onStart = (e) => {
-                isDragging = true;
-                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-                startX = clientX;
-                startY = clientY;
-                disk.style.cursor = 'grabbing';
-            };
+function gridSVG(X0, colW, top, bottom, labels) {
+  let s = '';
+  for (let i = 0; i <= HISTORY_SIZE; i++) s += `<line class="gl" x1="${X0 + i * colW}" y1="${top}" x2="${X0 + i * colW}" y2="${bottom}"/>`;
+  labels.forEach(([v, y]) => s += `<line class="gl" x1="${X0}" y1="${y}" x2="${X0 + HISTORY_SIZE * colW}" y2="${y}"/><text class="yl" x="${X0 - 12}" y="${y}" text-anchor="end" dominant-baseline="central">${v}</text>`);
+  return s;
+}
 
-            const onMove = (e) => {
-                if (!isDragging) return;
-                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-                
-                // Tính độ lệch khoảng cách theo cả trục X và Y
-                const diffX = clientX - startX;
-                const diffY = clientY - startY;
-                
-                disk.style.transform = `translate(${diffX}px, ${diffY}px)`;
-                
-                // Tính khoảng cách kéo theo đường chéo (bán kính bất kì từ tâm)
-                const distance = Math.sqrt(diffX * diffX + diffY * diffY);
-                
-                // Nếu kéo ra xa quá 120px theo bất kì hướng nào thì tính là mở đĩa thành công
-                if (distance > 120) {
-                    isDragging = false;
-                    clearTimeout(gameState.revealTimer); // Hủy đếm ngược tự động mở
-                    finalizeResult(total, result);
-                }
-            };
+function renderHistModal(force) {
+  const t = gameState.tables[histState.id];
+  if (!t) return;
+  const key = histState.id + '-' + t.history[0].session + histState.vis.join('');
+  if (!force && key === histState.key) return;
+  histState.key = key;
 
-            const onEnd = () => {
-                if (!isDragging) return;
-                isDragging = false;
-                disk.style.cursor = 'grab';
-                // Thêm hiệu ứng hồi vị mượt mà nếu thả tay giữa chừng
-                disk.style.transition = 'transform 0.2s ease-out';
-                disk.style.transform = 'translate(0px, 0px)';
-                setTimeout(() => { disk.style.transition = 'none'; }, 200);
-            };
+  const h0 = t.history[0];
+  $('histTable').textContent = 'Bàn ' + t.name;
+  $('histLatest').textContent = 'Phiên gần nhất: #' + h0.session;
+  $('histRes').innerHTML = `<span style="color:${h0.result === 'T' ? 'var(--tai)' : 'var(--xiu)'}">${SIDE_NAME[h0.result]}</span>(${h0.d.join('-')})`;
+  [0, 1, 2].forEach(k => $('tg' + k).classList.toggle('off', !histState.vis[k]));
 
-            disk.onmousedown = onStart;
-            window.onmousemove = onMove;
-            window.onmouseup = onEnd;
-            disk.ontouchstart = onStart;
-            window.ontouchmove = onMove;
-            window.ontouchend = onEnd;
-        }
+  const arr = t.history.slice().reverse(); // cũ -> mới
+  const X0 = 60, colW = 720 / HISTORY_SIZE, cx = (i) => X0 + (i + 0.5) * colW;
 
-        function finalizeResult(total, result) {
-            // Hủy toàn bộ sự kiện vuốt kéo tránh lỗi lặp kết quả
-            window.onmousemove = null; window.onmouseup = null;
-            window.ontouchmove = null; window.ontouchend = null;
+  // Biểu đồ 1: tổng điểm 3..18 (nốt đen = Hà Thành, nốt trắng = Ngọc Xăm)
+  const yT = (v) => 205 - (v - 3) / 15 * 185;
+  let s = gridSVG(X0, colW, 20, 205, [3, 6, 9, 12, 15, 18].map(v => [v, yT(v)]));
+  s += `<polyline fill="none" stroke="#fff" stroke-width="1.5" points="${arr.map((h, i) => cx(i) + ',' + yT(h.total)).join(' ')}"/>`;
+  arr.forEach((h, i) => {
+    const black = h.result === 'T';
+    s += `<circle cx="${cx(i)}" cy="${yT(h.total)}" r="12" fill="${black ? '#0b0b0b' : '#f4ead0'}" stroke="#c9a14a" stroke-width="2"/>` +
+         `<text x="${cx(i)}" y="${yT(h.total)}" text-anchor="middle" dominant-baseline="central" font-size="12" fill="${black ? '#fff' : '#222'}">${h.total}</text>`;
+  });
+  $('chartTotal').innerHTML = s;
 
-            const disk = document.getElementById('diskOverlay');
-            disk.style.display = 'none';
-            
-            const resText = document.getElementById('resultText');
-            resText.textContent = `${total} Điểm - ${result === 'T' ? 'HÀ Thành' : 'Ngọc Xăm'}`;
+  // Biểu đồ 2: từng xúc xắc 1, 2, 3 (giá trị 1..6)
+  const yD = (v) => 170 - (v - 1) / 5 * 150;
+  s = gridSVG(X0, colW, 20, 170, [1, 2, 3, 4, 5, 6].map(v => [v, yD(v)]));
+  [2, 1, 0].forEach(k => {
+    if (!histState.vis[k]) return;
+    s += `<polyline fill="none" stroke="${DICE_COLORS[k].line}" stroke-width="1.8" points="${arr.map((h, i) => cx(i) + ',' + yD(h.d[k])).join(' ')}"/>`;
+    arr.forEach((h, i) => s += `<circle cx="${cx(i)}" cy="${yD(h.d[k])}" r="7" fill="${DICE_COLORS[k].dot}" stroke="rgba(255,255,255,.6)" stroke-width="1"/>`);
+  });
+  $('chartDice').innerHTML = s;
+}
 
-            // Tính toán tiền cược và cộng/trừ tiền thưởng
-            if (gameState.selectedSide === result) {
-                const win = gameState.betAmount * 2;
-                gameState.balance += win;
-                showNotif(`Chúc mừng! Bạn thắng ${win.toLocaleString()}đ`);
-            } else if (gameState.betAmount > 0) {
-                showNotif(`Rất tiếc! Bạn đã thua ván này`);
-            }
+let notifTimeout = null;
+function showNotif(msg) {
+  const n = $('notif');
+  n.textContent = msg; n.style.display = 'block';
+  clearTimeout(notifTimeout);
+  notifTimeout = setTimeout(() => n.style.display = 'none', 3000);
+}
 
-            // Cập nhật lịch sử bàn cược
-            gameState.tables[gameState.currentTable].history.unshift({ 
-                total, result, time: new Date().toLocaleTimeString() 
-            });
+// ============ TÀI KHOẢN (lưu trong localStorage của trình duyệt) ============
+let currentUser = null, lastSavedBal = null;
+const LS_ACC = 'sunwin_accounts', LS_CUR = 'sunwin_current';
+function loadAccs() { try { return JSON.parse(localStorage.getItem(LS_ACC)) || {}; } catch (e) { return {}; } }
+function saveAccs(a) { try { localStorage.setItem(LS_ACC, JSON.stringify(a)); } catch (e) { showNotif('Không lưu được dữ liệu trình duyệt!'); } }
+async function hashPw(pw, salt) { // mật khẩu không lưu dạng chữ thường, chỉ lưu bản băm
+  const text = salt + ':' + pw;
+  if (window.crypto && crypto.subtle) {
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
+    return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+  let h = 0; for (const c of text) h = (h * 31 + c.charCodeAt(0)) | 0;
+  return 'x' + h;
+}
+function authMsg(text, ok) { const e = $('authMsg'); e.textContent = text; e.style.color = ok ? '#2ecc71' : '#ff7a6b'; }
+function authTab(m) {
+  $('loginForm').style.display = m === 'login' ? 'block' : 'none';
+  $('regForm').style.display = m === 'register' ? 'block' : 'none';
+  $('tabLogin').classList.toggle('on', m === 'login');
+  $('tabReg').classList.toggle('on', m === 'register');
+  authMsg('');
+}
+async function doRegister() {
+  const u = $('regUser').value.trim().toLowerCase(), p = $('regPass').value, p2 = $('regPass2').value, n = $('regName').value.trim();
+  if (!/^[a-z0-9_]{4,20}$/.test(u)) return authMsg('Tên đăng nhập phải 4-20 ký tự, chỉ gồm chữ, số hoặc dấu _');
+  if (p.length < 6) return authMsg('Mật khẩu phải có ít nhất 6 ký tự');
+  if (p !== p2) return authMsg('Mật khẩu xác minh không khớp');
+  if (n.length < 2 || n.length > 16) return authMsg('Tên hiển thị phải từ 2 đến 16 ký tự');
+  const accs = loadAccs();
+  if (accs[u]) return authMsg('Tên đăng nhập này đã tồn tại');
+  const salt = Math.random().toString(36).slice(2);
+  accs[u] = { salt, hash: await hashPw(p, salt), display: n, id: randInt(1e8, 9e8 - 1), balance: 100000 };
+  saveAccs(accs);
+  ['regUser', 'regPass', 'regPass2', 'regName'].forEach(i => $(i).value = '');
+  authTab('login');
+  $('lgUser').value = u; $('lgPass').value = '';
+  authMsg('Đăng ký thành công! Hãy đăng nhập.', true);
+}
+async function doLogin() {
+  const u = $('lgUser').value.trim().toLowerCase(), acc = loadAccs()[u];
+  if (!acc || acc.hash !== await hashPw($('lgPass').value, acc.salt)) return authMsg('Sai tên đăng nhập hoặc mật khẩu');
+  try { localStorage.setItem(LS_CUR, u); } catch (e) {}
+  loginAs(u);
+}
+function loginAs(u) {
+  const acc = loadAccs()[u];
+  currentUser = u; gameState.balance = lastSavedBal = acc.balance;
+  $('lbName').textContent = acc.display;
+  $('lbAvatar').textContent = acc.display[0].toUpperCase();
+  $('authScreen').style.display = 'none';
+  $('lobby').style.display = 'flex';
+  authMsg('');
+  renderAll();
+}
+function saveBalance() {
+  const a = loadAccs();
+  if (!currentUser || !a[currentUser]) return;
+  a[currentUser].balance = gameState.balance; saveAccs(a); lastSavedBal = gameState.balance;
+}
+function logout() {
+  Object.values(gameState.tables).forEach(t => { gameState.balance += t.betAmount; t.betAmount = 0; }); // hoàn cược chưa mở
+  saveBalance();
+  try { localStorage.removeItem(LS_CUR); } catch (e) {}
+  location.reload();
+}
 
-            gameState.betAmount = 0;
-            gameState.selectedSide = null;
-            updateUI();
-            renderHistory();
+// ============ SẢNH + THÔNG TIN USER ============
+function goLobby() { $('stage').style.display = 'none'; $('lobby').style.display = 'flex'; renderAll(); }
+function setTab(btn) {
+  document.querySelectorAll('#lbTabs button').forEach(b => b.classList.toggle('on', b === btn));
+  const has = ['ALL', 'MINIGAMES'].includes(btn.textContent);
+  $('lbCards').style.display = has ? 'flex' : 'none';
+  $('lbEmpty').style.display = has ? 'none' : 'block';
+}
+function topUp() { gameState.balance += 100000; renderAll(); showNotif('Đã nạp 100,000 xu thử nghiệm'); }
+function soon() { showNotif('Tính năng đang được phát triển'); }
+function openUser() {
+  const acc = loadAccs()[currentUser];
+  $('uAvatar').textContent = acc.display[0].toUpperCase();
+  $('uName').textContent = acc.display; $('uId').textContent = acc.id; $('uLogin').textContent = currentUser;
+  $('uBal').textContent = gameState.balance.toLocaleString();
+  $('userModal').style.display = 'flex';
+}
+function closeUser() { $('userModal').style.display = 'none'; }
 
-            // Đợi đúng 5s sau khi mở đĩa rồi tự động reset ván chơi mới
-            setTimeout(() => {
-                gameState.isOpening = false;
-                gameState.tables[gameState.currentTable].timer = 40;
-                gameState.tables[gameState.currentTable].isRolling = false;
-                resText.textContent = "";
-            }, 5000);
-        }
-
-        function renderHistory() {
-            const list = document.getElementById('historyList');
-            const history = gameState.tables[gameState.currentTable].history;
-            list.innerHTML = history.slice(0, 10).map(h => `
-                <div class="history-row">
-                    <span>${h.time}</span>
-                    <span>${h.total} điểm</span>
-                    <span style="color:${h.result === 'T' ? '#f1c40f' : '#3498db'}">${h.result === 'T' ? 'Hà Thành' : 'Ngọc Xăm'}</span>
-                </div>
-            `).join('');
-        }
-
-        function showNotif(msg) {
-            const n = document.getElementById('notif');
-            n.textContent = msg;
-            n.style.display = 'block';
-            setTimeout(() => n.style.display = 'none', 3000);
-        }
-    </script>
+Object.values(gameState.tables).forEach(buildWindow);
+(function autoLogin() { // còn phiên đăng nhập cũ thì vào thẳng sảnh
+  let u = null; try { u = localStorage.getItem(LS_CUR); } catch (e) {}
+  if (u && loadAccs()[u]) loginAs(u);
+})();
+</script>
 </body>
 </html>
