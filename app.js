@@ -450,6 +450,30 @@ function showNotif(msg) {
 
 // ============ TÀI KHOẢN (lưu trong localStorage của trình duyệt) ============
 let currentUser = null, lastSavedBal = null;
+const GUEST_KEY = 'sunwin_guest_data';
+
+function saveGuestData() {
+    if (currentUser) return;
+
+    const data = {
+        balance: gameState.balance,
+        savedAt: Date.now()
+    };
+
+    localStorage.setItem(GUEST_KEY, JSON.stringify(data));
+}
+
+function loadGuestData() {
+    try {
+        const data = JSON.parse(localStorage.getItem(GUEST_KEY));
+
+        if (data && Number.isFinite(Number(data.balance))) {
+            gameState.balance = Number(data.balance);
+        }
+    } catch (e) {
+        console.error('Lỗi tải dữ liệu khách:', e);
+    }
+}
 const LS_ACC = 'sunwin_accounts', LS_CUR = 'sunwin_current';
 function loadAccs() { try { return JSON.parse(localStorage.getItem(LS_ACC)) || {}; } catch (e) { return {}; } }
 function saveAccs(a) { try { localStorage.setItem(LS_ACC, JSON.stringify(a)); } catch (e) { showNotif('Không lưu được dữ liệu trình duyệt!'); } }
@@ -502,17 +526,60 @@ function loginAs(u) {
   authMsg('');
   renderAll();
 }
-function saveBalance() {
-  const a = loadAccs();
-  if (!currentUser || !a[currentUser]) return;
-  a[currentUser].balance = gameState.balance; saveAccs(a); lastSavedBal = gameState.balance;
+
+async function saveBalance() {
+    if (!currentUser) return;
+
+    const { data: userData, error: userError } = await sb.auth.getUser();
+
+    if (userError || !userData.user) {
+        console.error('Không lấy được người dùng:', userError);
+        return;
+    }
+
+    const { error } = await sb
+        .from('player_accounts')
+        .update({
+            balance: gameState.balance
+        })
+        .eq('user_id', userData.user.id);
+
+    if (error) {
+        console.error('Lỗi lưu số dư:', error);
+        showNotif('Không thể đồng bộ số dư lên máy chủ!');
+        return;
+    }
+
+    lastSavedBal = gameState.balance;
 }
-function logout() {
-  Object.values(gameState.tables).forEach(t => { gameState.balance += t.betAmount; t.betAmount = 0; }); // hoàn cược chưa mở
-  saveBalance();
-  try { localStorage.removeItem(LS_CUR); } catch (e) {}
-  location.reload();
+
+
+async function logout() {
+    Object.values(gameState.tables).forEach(t => {
+        gameState.balance += t.betAmount;
+        t.betAmount = 0;
+    });
+
+    await saveBalance();
+
+    const { error } = await sb.auth.signOut();
+
+    if (error) {
+        console.error('Lỗi đăng xuất:', error);
+        showNotif('Không thể đăng xuất. Vui lòng thử lại!');
+        return;
+    }
+
+    currentUser = null;
+    lastSavedBal = null;
+
+    try {
+        localStorage.removeItem(LS_CUR);
+    } catch (e) {}
+
+    location.reload();
 }
+
 
 // ============ SẢNH + THÔNG TIN USER ============
 function goLobby() { $('stage').style.display = 'none'; $('lobby').style.display = 'flex'; renderAll(); }
@@ -607,7 +674,39 @@ function closeUser() { $('userModal').style.display = 'none'; }
 
 Object.values(gameState.tables).forEach(buildWindow);
 renderGames(); renderFeed();
-(function autoLogin() { // còn phiên đăng nhập cũ thì vào thẳng sảnh
-  let u = null; try { u = localStorage.getItem(LS_CUR); } catch (e) {}
-  if (u && loadAccs()[u]) loginAs(u);
+
+(async function restoreSupabaseSession() {
+    const { data: sessionData, error: sessionError } =
+        await sb.auth.getSession();
+
+    if (sessionError || !sessionData.session) {
+    loadGuestData();
+    return;
+}
+
+    const userId = sessionData.session.user.id;
+
+    const { data: account, error } = await sb
+        .from('player_accounts')
+        .select('username, display_name, balance')
+        .eq('user_id', userId)
+        .single();
+
+    if (error || !account) {
+        console.error('Không tải được tài khoản:', error);
+        return;
+    }
+
+    currentUser = account.username;
+    gameState.balance = lastSavedBal = Number(account.balance);
+
+    $('lbName').textContent = account.display_name;
+    $('lbAvatar').textContent =
+        account.display_name.charAt(0).toUpperCase();
+
+    $('authScreen').style.display = 'none';
+    $('lobby').style.display = 'flex';
+
+    authMsg('');
+    renderAll();
 })();

@@ -23,6 +23,13 @@
       <label>Mật khẩu</label><input id="lgPass" type="password" autocomplete="current-password">
       <button class="act act-confirm" style="margin-top:16px" type="submit">ĐĂNG NHẬP</button>
     </form>
+
+    <button class="act" type="button"
+      style="margin-top:12px;width:100%;background:#f1c40f;color:#222;border:1px solid #d4ac0d"
+      onclick="playAsGuest()">
+      CHƠI VỚI TƯ CÁCH KHÁCH
+    </button>
+
     <form id="regForm" style="display:none" onsubmit="doRegister();return false">
       <label>Địa chỉ Email</label>
       <input id="regEmail" type="email" autocomplete="email" required>
