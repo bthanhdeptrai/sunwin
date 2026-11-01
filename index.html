@@ -6,6 +6,10 @@
 <title>SUNWIN - Mặt trời chiến thắng</title>
 <link rel="stylesheet" href="style.css">
 </head>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="./js/supabase.js"></script>
+
 <body>
 <div id="notif" class="notif"></div>
 <div id="tip"></div>
@@ -20,6 +24,8 @@
       <button class="act act-confirm" style="margin-top:16px" type="submit">ĐĂNG NHẬP</button>
     </form>
     <form id="regForm" style="display:none" onsubmit="doRegister();return false">
+      <label>Địa chỉ Email</label>
+      <input id="regEmail" type="email" autocomplete="email" required>
       <label>Tên đăng nhập (4-20 ký tự: chữ, số, dấu _)</label><input id="regUser" autocomplete="username">
       <label>Mật khẩu (từ 6 ký tự)</label><input id="regPass" type="password" autocomplete="new-password">
       <label>Xác minh lại mật khẩu</label><input id="regPass2" type="password" autocomplete="new-password">
@@ -133,5 +139,6 @@
 </div>
 
 <script src="app.js"></script>
+<script src="./js/auth.js"></script>
 </body>
 </html>

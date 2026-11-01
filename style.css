@@ -325,3 +325,63 @@ button{font-family:inherit}
   .session-plate{min-width:110px;padding:6px 12px 7px;font-size:.9rem}.win-label{display:none}.deco{width:170px}
   .rd{width:11px;height:11px}.road-row .dot-road{gap:3px;padding:7px 6px}
 }
+
+
+/* ===== Responsive: không còn thanh cuộn ngang, mọi thứ co theo bề rộng bàn ===== */
+html,body{max-width:100%;overflow:hidden}
+.lb-main{overflow-x:hidden}
+.tbl-window{container-type:inline-size}
+.win-body{overflow-x:hidden;min-width:0}
+.win-bar,.board-main,.road-row,.action-row,.chip-row{min-width:0}
+
+/* thanh trên cùng của bàn */
+.ibar{min-width:0;flex:1 1 0}
+.win-label{white-space:nowrap}
+.win-bar .ico-btn{flex:0 0 auto;width:clamp(28px,7cqw,34px);height:clamp(28px,7cqw,34px)}
+.session-plate{min-width:clamp(96px,30cqw,150px);padding-left:clamp(10px,4cqw,22px);padding-right:clamp(10px,4cqw,22px);font-size:clamp(.82rem,3.6cqw,1.05rem)}
+@container (max-width:430px){.win-label{display:none}}
+
+/* hai ô cược + vòng tròn giữa: tính theo % bề rộng bàn */
+.side-panel{flex:1 1 0;min-width:0;overflow:visible}
+.side-T{padding-right:7cqw}.side-X{padding-left:7cqw}
+.side-name{font-size:clamp(.95rem,4.8cqw,1.25rem)}
+.pool,.mybet{font-size:clamp(.7rem,3.4cqw,.9rem)}
+.pill{font-size:clamp(.66rem,3cqw,.78rem)}
+.dice-area{flex:0 0 auto;width:34cqw;height:34cqw;margin:0 -6cqw}
+.timer{font-size:clamp(2.2rem,14cqw,4.2rem)}
+.dice{width:clamp(24px,7cqw,36px);height:clamp(24px,7cqw,36px)}
+.dice-box{gap:clamp(3px,1cqw,6px)}
+
+/* hàng chấm lịch sử: 20 chấm tự co để luôn vừa khung */
+.road-row{gap:clamp(4px,1.6cqw,8px)}
+.road-row .rb{width:clamp(28px,7cqw,36px);height:clamp(28px,7cqw,36px)}
+.road-row .dot-road{min-width:0;gap:clamp(2px,.8cqw,6px);padding:8px clamp(6px,2cqw,10px)}
+.rd{flex:1 1 0;min-width:0;max-width:15px;width:auto;height:auto;aspect-ratio:1}
+
+/* chip + nút hành động */
+.chip-row .chip{font-size:clamp(.58rem,2.6cqw,.74rem);overflow:hidden}
+.action-row{gap:clamp(4px,1.6cqw,8px)}
+.act{padding:10px 4px;font-size:clamp(.72rem,3.2cqw,.9rem);min-width:0}
+
+/* sảnh trên điện thoại */
+@media (max-width:640px){
+  .lb-top{gap:6px;padding:6px 8px}
+  .avatar{width:42px;height:42px;font-size:1.2rem}
+  .lb-name{max-width:84px;padding:4px 8px;font-size:.78rem}
+  .lb-money{min-width:0;flex:1;padding:3px 4px 3px 10px}
+  #lbBalance{font-size:1rem;min-width:0;overflow:hidden;text-overflow:ellipsis}
+  .lb-money button{width:28px;height:28px;font-size:1.1rem}
+  .lb-btn{padding:2px 6px;font-size:1rem}
+  .lb-main{padding:10px}
+  .jp-card{padding:8px 4px 10px;min-width:0}
+  .jp-card b,.jp-gold b{font-size:.74rem;overflow-wrap:anywhere}
+  .hero{padding:16px 14px;gap:8px}
+  .hero-art{gap:16px}
+  .hero-info h2{font-size:1.4rem}
+  .lb-bottom button{font-size:.7rem;padding:4px 2px}
+  .lb-bottom .rut{font-size:1.05rem;letter-spacing:1px;padding:10px 4px;margin:-8px 4px 2px}
+  .tr-badge{width:48px;height:48px;font-size:1.5rem}
+  .auth-card{padding:18px 16px 22px}
+}
+@media (max-width:1499px){#topbar{top:76px;left:50%;transform:translateX(-50%);flex-direction:row;align-items:center;max-width:calc(100vw - 16px)}#dock{flex-direction:row}}
+@media (min-width:1500px){#topbar{top:50%;left:10px;transform:translateY(-50%);flex-direction:column;align-items:stretch;border-radius:18px;max-width:200px}#dock{flex-direction:column}}
