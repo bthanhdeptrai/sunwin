@@ -102,13 +102,7 @@ async function doLogin() {
 }
 function playAsGuest() {
     currentUser = null;
-    lastSavedBal = null;
-
-    gameState.balance = 100000;
-
-    Object.values(gameState.tables).forEach(t => {
-        t.betAmount = 0;
-    });
+    loadGuestData();
 
     $('lbName').textContent = 'Khách';
     $('lbAvatar').textContent = 'K';
